@@ -213,15 +213,16 @@
             <form id="clientForm" onsubmit="saveClient(event)" class="space-y-3.5 text-xs">
                 <input type="hidden" id="clientId">
 
+                <!-- Row 1: Portal & Tax Year -->
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
+                    <div id="wrapperPortalType" class="col-span-1">
                         <label class="block font-medium text-slate-700 mb-1">Portal Category</label>
-                        <select id="portalType" class="w-full p-2.5 rounded-xl executive-input font-bold text-emerald-700 bg-white">
+                        <select id="portalType" onchange="togglePortalFields()" class="w-full p-2.5 rounded-xl executive-input font-bold text-emerald-700 bg-white">
                             <option value="FBR">FBR Portal</option>
                             <option value="GTE">GTE Portal</option>
                         </select>
                     </div>
-                    <div>
+                    <div id="wrapperTaxYear" class="col-span-1">
                         <label class="block font-medium text-slate-700 mb-1">Tax Year</label>
                         <select id="taxYear" class="w-full p-2.5 rounded-xl executive-input font-bold text-blue-700 bg-white">
                             <option value="2027">TY 2027</option>
@@ -233,12 +234,13 @@
                     </div>
                 </div>
 
+                <!-- Row 2: Full Name & ATL Status -->
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
+                    <div id="wrapperFullName" class="col-span-1">
                         <label class="block font-medium text-slate-700 mb-1">Full Name</label>
                         <input type="text" id="fullName" placeholder="Client Name" class="w-full p-2.5 rounded-xl executive-input">
                     </div>
-                    <div>
+                    <div id="wrapperAtlStatus" class="col-span-1">
                         <label class="block font-medium text-slate-700 mb-1">ATL Filer Status</label>
                         <select id="atlStatus" class="w-full p-2.5 rounded-xl executive-input font-bold bg-white">
                             <option value="Active">🟢 ATL Active</option>
@@ -247,6 +249,7 @@
                     </div>
                 </div>
 
+                <!-- Row 3: Phone & Email -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">Phone Number</label>
@@ -258,7 +261,8 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <!-- Row 4: CNIC & NTN (Hidden for GTE) -->
+                <div id="rowCnicNtn" class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">CNIC Number</label>
                         <input type="text" id="cnic" placeholder="12345-1234567-1" oninput="formatCNIC(this)" maxlength="15" class="w-full p-2.5 rounded-xl executive-input font-mono">
@@ -307,7 +311,8 @@
                     </div>
                 </div>
 
-                <div>
+                <!-- Tax Password Wrapper (Hidden for GTE) -->
+                <div id="wrapperTaxPassword">
                     <label class="block font-medium text-slate-700 mb-1">Tax Portal Password</label>
                     <input type="text" id="taxPassword" placeholder="Optional Password" class="w-full p-2.5 rounded-xl executive-input font-mono">
                 </div>
@@ -350,6 +355,33 @@
             if (v.length > 5 && v.length <= 12) v = v.slice(0,5) + '-' + v.slice(5);
             else if (v.length > 12) v = v.slice(0,5) + '-' + v.slice(5,12) + '-' + v.slice(12,13);
             input.value = v;
+        }
+
+        // Dynamic Form Field Visibility for GTE vs FBR
+        function togglePortalFields() {
+            const portal = document.getElementById('portalType').value;
+            const portalWrap = document.getElementById('wrapperPortalType');
+            const taxYearWrap = document.getElementById('wrapperTaxYear');
+            const fullNameWrap = document.getElementById('wrapperFullName');
+            const atlWrap = document.getElementById('wrapperAtlStatus');
+            const cnicNtnRow = document.getElementById('rowCnicNtn');
+            const passwordWrap = document.getElementById('wrapperTaxPassword');
+
+            if (portal === 'GTE') {
+                portalWrap.className = "col-span-2";
+                taxYearWrap.classList.add('hidden');
+                fullNameWrap.className = "col-span-2";
+                atlWrap.classList.add('hidden');
+                cnicNtnRow.classList.add('hidden');
+                passwordWrap.classList.add('hidden');
+            } else {
+                portalWrap.className = "col-span-1";
+                taxYearWrap.classList.remove('hidden');
+                fullNameWrap.className = "col-span-1";
+                atlWrap.classList.remove('hidden');
+                cnicNtnRow.classList.remove('hidden');
+                passwordWrap.classList.remove('hidden');
+            }
         }
 
         // Lock Engine
@@ -543,11 +575,13 @@
                     <td class="py-3.5 px-4 align-top">
                         <div class="flex items-center gap-1.5">
                             <span class="px-2 py-0.5 text-[10px] font-black rounded ${portal === 'FBR' ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-indigo-800'}">${portal}</span>
-                            <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-50 text-blue-700">TY ${year}</span>
+                            ${portal === 'FBR' ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-50 text-blue-700">TY ${year}</span>` : ''}
                         </div>
-                        <div class="mt-1 text-[11px] font-semibold ${atl === 'Active' ? 'text-emerald-700' : 'text-rose-600'}">
-                            ${atl === 'Active' ? '🟢 ATL Active' : '🔴 Inactive'}
-                        </div>
+                        ${portal === 'FBR' ? `
+                            <div class="mt-1 text-[11px] font-semibold ${atl === 'Active' ? 'text-emerald-700' : 'text-rose-600'}">
+                                ${atl === 'Active' ? '🟢 ATL Active' : '🔴 Inactive'}
+                            </div>
+                        ` : '<div class="mt-1 text-[11px] text-slate-400 font-medium">GTE Service</div>'}
                     </td>
 
                     <td class="py-3.5 px-4 align-top">
@@ -616,20 +650,21 @@
             e.preventDefault();
             const id = document.getElementById('clientId').value;
             const passVal = document.getElementById('taxPassword').value;
+            const portalVal = document.getElementById('portalType').value;
 
             const payload = {
-                portal_type: document.getElementById('portalType').value,
-                tax_year: document.getElementById('taxYear').value,
-                atl_status: document.getElementById('atlStatus').value,
+                portal_type: portalVal,
+                tax_year: portalVal === 'FBR' ? document.getElementById('taxYear').value : 'N/A',
+                atl_status: portalVal === 'FBR' ? document.getElementById('atlStatus').value : 'N/A',
                 full_name: document.getElementById('fullName').value || 'Unnamed Client',
                 phone: document.getElementById('phone').value || '',
                 email: document.getElementById('email').value || '',
-                cnic: document.getElementById('cnic').value || '',
-                ntn: document.getElementById('ntn').value || '',
+                cnic: portalVal === 'FBR' ? (document.getElementById('cnic').value || '') : '',
+                ntn: portalVal === 'FBR' ? (document.getElementById('ntn').value || '') : '',
                 referred_by: document.getElementById('referredBy').value || '',
                 fee_agreed: parseFloat(document.getElementById('feeAgreed').value) || 0,
                 fee_received: parseFloat(document.getElementById('feeReceived').value) || 0,
-                tax_portal_password_encrypted: passVal ? encryptText(passVal) : '',
+                tax_portal_password_encrypted: (portalVal === 'FBR' && passVal) ? encryptText(passVal) : '',
                 payment_status: document.getElementById('paymentStatus').value,
                 contact_status: document.getElementById('contactStatus').value,
                 notes: document.getElementById('notes').value || '',
@@ -661,6 +696,9 @@
             if (!c) return;
             document.getElementById('clientId').value = c.id;
             document.getElementById('portalType').value = c.portal_type || 'FBR';
+            
+            togglePortalFields();
+
             document.getElementById('taxYear').value = c.tax_year || '2026';
             document.getElementById('atlStatus').value = c.atl_status || 'Active';
             document.getElementById('fullName').value = c.full_name || '';
@@ -706,6 +744,9 @@
             document.getElementById('clientId').value = '';
             document.getElementById('portalType').value = activeTab === 'GTE' ? 'GTE' : 'FBR';
             document.getElementById('taxYear').value = '2026';
+            
+            togglePortalFields();
+
             document.getElementById('modalTitle').innerText = "Add Client Record";
             document.getElementById('clientModal').classList.remove('hidden');
         }
@@ -734,18 +775,59 @@
 
         // GOOGLE DRIVE AUTO SAVE ENGINE
         function saveToGoogleDrive() {
+            let clientId = localStorage.getItem('aqib_google_client_id');
+
+            if (!clientId) {
+                Swal.fire({
+                    title: 'Google Drive Setup',
+                    text: 'Enter your Google OAuth Client ID to save directly to Drive (or click Download CSV):',
+                    input: 'text',
+                    inputPlaceholder: 'your-id.apps.googleusercontent.com',
+                    showCancelButton: true,
+                    confirmButtonText: 'Save ID & Upload',
+                    cancelButtonText: 'Download CSV Instead',
+                    confirmButtonColor: '#059669'
+                }).then((result) => {
+                    if (result.isConfirmed && result.value) {
+                        localStorage.setItem('aqib_google_client_id', result.value.trim());
+                        executeGoogleDriveUpload(result.value.trim());
+                    } else {
+                        exportToCSV();
+                    }
+                });
+                return;
+            }
+
+            executeGoogleDriveUpload(clientId);
+        }
+
+        function executeGoogleDriveUpload(clientId) {
             if (typeof google === 'undefined' || !google.accounts) {
-                Swal.fire({ icon: 'info', title: 'Google Identity Loading', text: 'Initializing Google OAuth, please try again in 2 seconds.' });
+                Swal.fire({ icon: 'info', title: 'Google Identity Loading', text: 'Initializing Google OAuth, please try again in a moment.' });
                 return;
             }
 
             const tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: '1073836109914-placeholder.apps.googleusercontent.com',
+                client_id: clientId,
                 scope: 'https://www.googleapis.com/auth/drive.file',
                 callback: async (response) => {
                     if (response.error !== undefined) {
-                        console.error(response);
-                        exportToCSV();
+                        console.error("Google Auth Error:", response);
+                        Swal.fire({ 
+                            icon: 'error', 
+                            title: 'Google Auth Error', 
+                            text: 'Invalid Client ID. Downloading CSV backup locally instead.',
+                            showCancelButton: true,
+                            confirmButtonText: 'Reset Client ID',
+                            cancelButtonText: 'OK'
+                        }).then((res) => {
+                            if (res.isConfirmed) {
+                                localStorage.removeItem('aqib_google_client_id');
+                                saveToGoogleDrive();
+                            } else {
+                                exportToCSV();
+                            }
+                        });
                         return;
                     }
                     
