@@ -40,7 +40,10 @@
             </div>
             <input type="password" id="pinInput" maxlength="4" placeholder="••••" class="w-full text-center text-3xl tracking-widest font-mono p-3 rounded-2xl executive-input focus:ring-2 focus:ring-emerald-500 outline-none">
             <button onclick="unlockApp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition">Unlock App</button>
-            <p class="text-[10px] text-slate-400">Default PIN: 1234 (Change in App)</p>
+            <div class="flex justify-between items-center text-[11px] pt-2 text-slate-400">
+                <span>Default PIN: 1234</span>
+                <button onclick="changePIN()" class="text-emerald-600 hover:underline font-bold">Change PIN</button>
+            </div>
         </div>
     </div>
 
@@ -63,6 +66,9 @@
             </div>
             
             <div class="flex items-center space-x-2">
+                <button onclick="changePIN()" title="Change Security PIN" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
+                    <i class="fa-solid fa-key text-amber-600"></i>
+                </button>
                 <button onclick="lockApp()" title="Lock App Screen" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
                     <i class="fa-solid fa-lock text-slate-600"></i>
                 </button>
@@ -355,6 +361,45 @@
             if (v.length > 5 && v.length <= 12) v = v.slice(0,5) + '-' + v.slice(5);
             else if (v.length > 12) v = v.slice(0,5) + '-' + v.slice(5,12) + '-' + v.slice(12,13);
             input.value = v;
+        }
+
+        // Change Security PIN Engine
+        function changePIN() {
+            Swal.fire({
+                title: 'Change Security PIN',
+                text: 'Enter your Current PIN:',
+                input: 'password',
+                inputAttributes: { maxlength: 4 },
+                inputPlaceholder: '••••',
+                showCancelButton: true,
+                confirmButtonText: 'Next',
+                confirmButtonColor: '#059669'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    if (res.value === APP_PIN) {
+                        Swal.fire({
+                            title: 'New 4-Digit PIN',
+                            text: 'Enter your NEW 4-digit PIN:',
+                            input: 'password',
+                            inputAttributes: { maxlength: 4 },
+                            inputPlaceholder: '••••',
+                            showCancelButton: true,
+                            confirmButtonText: 'Save New PIN',
+                            confirmButtonColor: '#059669'
+                        }).then((newRes) => {
+                            if (newRes.isConfirmed && newRes.value && newRes.value.length === 4) {
+                                APP_PIN = newRes.value;
+                                localStorage.setItem('aqib_app_pin', newRes.value);
+                                Swal.fire({ icon: 'success', title: 'PIN Updated!', text: 'Your security PIN has been successfully changed.' });
+                            } else if (newRes.isConfirmed) {
+                                Swal.fire({ icon: 'error', title: 'Invalid PIN', text: 'PIN must be exactly 4 digits long.' });
+                            }
+                        });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Incorrect PIN', text: 'Current PIN was incorrect.' });
+                    }
+                }
+            });
         }
 
         // Dynamic Form Field Visibility for GTE vs FBR
