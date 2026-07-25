@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaxSuite Pro - Client Management</title>
+    <title>Aqib Arain - Tax & Credential Vault</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -28,19 +28,19 @@
     <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-black text-lg">
-                    <i class="fa-solid fa-calculator"></i>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-user-tie"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-base text-white tracking-tight">TaxSuite <span class="text-emerald-400 font-light">Advisor</span></h1>
-                    <p class="text-[10px] text-slate-400">Client & Credential Vault</p>
+                    <h1 class="font-bold text-base text-white tracking-tight">Aqib Arain</h1>
+                    <p class="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold">Tax Advisor & Portal Vault</p>
                 </div>
             </div>
             
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2">
                 <button onclick="exportToCSV()" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center space-x-2">
-                    <i class="fa-solid fa-file-excel text-emerald-400"></i>
-                    <span class="hidden sm:inline">Export Backup</span>
+                    <i class="fa-brands fa-google-drive text-emerald-400"></i>
+                    <span class="hidden sm:inline">Backup / Drive Export</span>
                 </button>
                 <button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs shadow-md transition flex items-center space-x-2">
                     <i class="fa-solid fa-plus"></i>
@@ -53,36 +53,55 @@
     <!-- Main Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
 
-        <!-- Stat Cards Summary -->
+        <!-- Combined Financial Dashboard Summary -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-slate-500">Total Clients</p>
-                    <h3 id="statTotal" class="text-2xl font-bold text-slate-900 mt-0.5">0</h3>
+                    <p class="text-xs font-medium text-slate-500">Total Deal Fees</p>
+                    <h3 id="statAgreed" class="text-xl md:text-2xl font-bold text-slate-900 mt-0.5">Rs. 0</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center"><i class="fa-solid fa-users text-lg"></i></div>
+                <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center"><i class="fa-solid fa-handshake text-lg"></i></div>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-slate-500">Paid Accounts</p>
-                    <h3 id="statPaid" class="text-2xl font-bold text-emerald-600 mt-0.5">0</h3>
+                    <p class="text-xs font-medium text-slate-500">Combined Fee Received</p>
+                    <h3 id="statReceived" class="text-xl md:text-2xl font-bold text-emerald-600 mt-0.5">Rs. 0</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-circle-check text-lg"></i></div>
+                <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-money-bill-wave text-lg"></i></div>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-slate-500">Unpaid Balance</p>
-                    <h3 id="statUnpaid" class="text-2xl font-bold text-rose-600 mt-0.5">0</h3>
+                    <p class="text-xs font-medium text-slate-500">Combined Remaining Fee</p>
+                    <h3 id="statRemaining" class="text-xl md:text-2xl font-bold text-rose-600 mt-0.5">Rs. 0</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-clock text-lg"></i></div>
+                <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-scale-unbalanced-flip text-lg"></i></div>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-slate-500">Pending Contact</p>
-                    <h3 id="statPending" class="text-2xl font-bold text-amber-600 mt-0.5">0</h3>
+                    <p class="text-xs font-medium text-slate-500">Active Records</p>
+                    <h3 id="statTotalClients" class="text-xl md:text-2xl font-bold text-blue-600 mt-0.5">0</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-phone-slash text-lg"></i></div>
+                <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-users text-lg"></i></div>
             </div>
+        </div>
+
+        <!-- Portal Filter Tabs (FBR vs GTE) -->
+        <div class="flex border-b border-slate-200 space-x-4 text-sm font-medium">
+            <button onclick="switchPortalTab('ALL')" id="tabALL" class="pb-3 border-b-2 border-emerald-500 text-emerald-600 font-bold flex items-center space-x-2">
+                <i class="fa-solid fa-border-all"></i>
+                <span>All Clients</span>
+                <span id="badgeALL" class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full">0</span>
+            </button>
+            <button onclick="switchPortalTab('FBR')" id="tabFBR" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+                <i class="fa-solid fa-building-columns text-emerald-600"></i>
+                <span>FBR Clients</span>
+                <span id="badgeFBR" class="bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full">0</span>
+            </button>
+            <button onclick="switchPortalTab('GTE')" id="tabGTE" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+                <i class="fa-solid fa-briefcase text-purple-600"></i>
+                <span>GTE Clients</span>
+                <span id="badgeGTE" class="bg-purple-50 text-purple-700 text-[10px] px-2 py-0.5 rounded-full">0</span>
+            </button>
         </div>
 
         <!-- Search & Filter Controls -->
@@ -90,19 +109,20 @@
             <div class="flex flex-col md:flex-row gap-3">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="searchInput" oninput="filterClients()" placeholder="Quick Search Name, Phone, CNIC, or NTN..." 
+                    <input type="text" id="searchInput" oninput="filterClients()" placeholder="Search Name, Phone, CNIC, or NTN..." 
                         class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
                 <div class="flex gap-2 text-xs">
                     <select id="paymentFilter" onchange="filterClients()" class="border border-slate-300 rounded-lg px-3 py-2.5 bg-white text-slate-700 focus:outline-none">
                         <option value="ALL">All Payment Status</option>
-                        <option value="Paid">Paid Only</option>
-                        <option value="Unpaid">Unpaid Only</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Partial">Partial Pay</option>
+                        <option value="Unpaid">Unpaid</option>
                     </select>
                     <select id="contactFilter" onchange="filterClients()" class="border border-slate-300 rounded-lg px-3 py-2.5 bg-white text-slate-700 focus:outline-none">
                         <option value="ALL">All Contact Status</option>
-                        <option value="Contacted">Contacted Only</option>
-                        <option value="Not Contacted">Not Contacted Only</option>
+                        <option value="Contacted">Contacted</option>
+                        <option value="Not Contacted">Not Contacted</option>
                     </select>
                 </div>
             </div>
@@ -110,12 +130,12 @@
 
         <!-- Client Cards Grid -->
         <div id="clientGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Cards Dynamically Inserted -->
+            <!-- Cards Inserted Dynamically -->
         </div>
 
     </div>
 
-    <!-- Modal Form (NO REQUIRED FIELDS) -->
+    <!-- Modal Form (Zero Required Fields) -->
     <div id="clientModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
@@ -123,13 +143,21 @@
                 <button onclick="closeClientModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <!-- Form has NO required attributes -->
             <form id="clientForm" onsubmit="saveClient(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="clientId">
 
-                <div>
-                    <label class="block font-medium text-slate-700 mb-1">Full Name</label>
-                    <input type="text" id="fullName" placeholder="Optional" class="w-full p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">Portal Category</label>
+                        <select id="portalType" class="w-full p-2.5 rounded-lg border border-slate-300 bg-white font-semibold text-emerald-700 outline-none">
+                            <option value="FBR">FBR Portal</option>
+                            <option value="GTE">GTE Portal</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-700 mb-1">Full Name</label>
+                        <input type="text" id="fullName" placeholder="Optional" class="w-full p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -146,7 +174,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">CNIC Number</label>
-                        <input type="text" id="cnic" placeholder="12345-1234567-1 (Optional)" oninput="formatCNIC(this)" maxlength="15" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <input type="text" id="cnic" placeholder="12345-1234567-1" oninput="formatCNIC(this)" maxlength="15" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">NTN Number</label>
@@ -154,26 +182,41 @@
                     </div>
                 </div>
 
+                <!-- Fee Deal Section -->
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                    <h4 class="font-bold text-slate-800 text-xs flex items-center"><i class="fa-solid fa-coins text-amber-500 mr-1.5"></i> Fee & Payment Deal</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-medium text-slate-700 mb-1">Fee Deal Amount (Rs.)</label>
+                            <input type="number" id="feeAgreed" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-medium text-slate-700 mb-1">Fee Received (Rs.)</label>
+                            <input type="number" id="feeReceived" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono text-emerald-700 font-bold focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-medium text-slate-700 mb-1">Payment Status</label>
+                            <select id="paymentStatus" class="w-full p-2.5 rounded-lg border border-slate-300 bg-white outline-none">
+                                <option value="Unpaid">Unpaid</option>
+                                <option value="Partial">Partial Pay</option>
+                                <option value="Paid">Paid</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-medium text-slate-700 mb-1">Contact Status</label>
+                            <select id="contactStatus" class="w-full p-2.5 rounded-lg border border-slate-300 bg-white outline-none">
+                                <option value="Not Contacted">Not Contacted</option>
+                                <option value="Contacted">Contacted</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block font-medium text-slate-700 mb-1">Tax Portal Password</label>
                     <input type="text" id="taxPassword" placeholder="Optional Password" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono focus:ring-2 focus:ring-emerald-500 outline-none">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block font-medium text-slate-700 mb-1">Payment Status</label>
-                        <select id="paymentStatus" class="w-full p-2.5 rounded-lg border border-slate-300 bg-white outline-none">
-                            <option value="Unpaid">Unpaid</option>
-                            <option value="Paid">Paid</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block font-medium text-slate-700 mb-1">Contact Status</label>
-                        <select id="contactStatus" class="w-full p-2.5 rounded-lg border border-slate-300 bg-white outline-none">
-                            <option value="Not Contacted">Not Contacted</option>
-                            <option value="Contacted">Contacted</option>
-                        </select>
-                    </div>
                 </div>
 
                 <div>
@@ -183,19 +226,20 @@
 
                 <div class="pt-3 flex justify-end space-x-2 border-t">
                     <button type="button" onclick="closeClientModal()" class="px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-100">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow">Save Record</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow">Save Client Record</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        const SUPABASE_URL = "https://xmrprtdsulbqkyflbgfj.supabase.co"; // Replace if different
+        const SUPABASE_URL = "https://xmrprtdsucbqkyflbgfj.supabase.co";
         const SUPABASE_KEY = "sb_publishable_MfURv5DghN1mAHOHhgpYhA_TtiuEdtT"; 
         const SECRET_KEY = "tax-advisor-secret-key";
 
-        const db = supabase.createClient("https://xmrprtdsucbqkyflbgfj.supabase.co", SUPABASE_KEY);
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let clientsData = [];
+        let activeTab = 'ALL';
 
         function encryptText(text) { return text ? CryptoJS.AES.encrypt(text, SECRET_KEY).toString() : ''; }
         function decryptText(cipher) { 
@@ -213,6 +257,16 @@
             input.value = v;
         }
 
+        function autoCalculateFeeStatus() {
+            const agreed = parseFloat(document.getElementById('feeAgreed').value) || 0;
+            const received = parseFloat(document.getElementById('feeReceived').value) || 0;
+            const statusSelect = document.getElementById('paymentStatus');
+
+            if (received <= 0) statusSelect.value = 'Unpaid';
+            else if (received >= agreed && agreed > 0) statusSelect.value = 'Paid';
+            else statusSelect.value = 'Partial';
+        }
+
         async function fetchClients() {
             const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
             if (error) {
@@ -220,15 +274,66 @@
                 return;
             }
             clientsData = data || [];
-            updateStats();
-            renderClients(clientsData);
+            updateCombinedFinancials();
+            filterClients();
         }
 
-        function updateStats() {
-            document.getElementById('statTotal').innerText = clientsData.length;
-            document.getElementById('statPaid').innerText = clientsData.filter(c => c.payment_status === 'Paid').length;
-            document.getElementById('statUnpaid').innerText = clientsData.filter(c => c.payment_status === 'Unpaid').length;
-            document.getElementById('statPending').innerText = clientsData.filter(c => c.contact_status === 'Not Contacted').length;
+        function updateCombinedFinancials() {
+            let totalAgreed = 0;
+            let totalReceived = 0;
+
+            clientsData.forEach(c => {
+                totalAgreed += parseFloat(c.fee_agreed || 0);
+                totalReceived += parseFloat(c.fee_received || 0);
+            });
+
+            const totalRemaining = totalAgreed - totalReceived;
+
+            document.getElementById('statAgreed').innerText = `Rs. ${totalAgreed.toLocaleString()}`;
+            document.getElementById('statReceived').innerText = `Rs. ${totalReceived.toLocaleString()}`;
+            document.getElementById('statRemaining').innerText = `Rs. ${totalRemaining.toLocaleString()}`;
+            document.getElementById('statTotalClients').innerText = clientsData.length;
+
+            document.getElementById('badgeALL').innerText = clientsData.length;
+            document.getElementById('badgeFBR').innerText = clientsData.filter(c => (c.portal_type || 'FBR') === 'FBR').length;
+            document.getElementById('badgeGTE').innerText = clientsData.filter(c => c.portal_type === 'GTE').length;
+        }
+
+        function switchPortalTab(tab) {
+            activeTab = tab;
+            ['ALL', 'FBR', 'GTE'].forEach(t => {
+                const btn = document.getElementById(`tab${t}`);
+                if (t === tab) {
+                    btn.className = "pb-3 border-b-2 border-emerald-500 text-emerald-600 font-bold flex items-center space-x-2";
+                } else {
+                    btn.className = "pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2";
+                }
+            });
+            filterClients();
+        }
+
+        function filterClients() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const payF = document.getElementById('paymentFilter').value;
+            const conF = document.getElementById('contactFilter').value;
+
+            const filtered = clientsData.filter(c => {
+                const portal = c.portal_type || 'FBR';
+                const matchTab = activeTab === 'ALL' || portal === activeTab;
+
+                const name = (c.full_name || '').toLowerCase();
+                const phone = c.phone || '';
+                const cnic = c.cnic || '';
+                const ntn = (c.ntn || '').toLowerCase();
+
+                const matchSearch = name.includes(query) || phone.includes(query) || cnic.includes(query) || ntn.includes(query);
+                const matchPay = payF === 'ALL' || c.payment_status === payF;
+                const matchCon = conF === 'ALL' || c.contact_status === conF;
+
+                return matchTab && matchSearch && matchPay && matchCon;
+            });
+
+            renderClients(filtered);
         }
 
         function renderClients(list) {
@@ -236,28 +341,47 @@
             grid.innerHTML = '';
 
             if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-folder-open text-3xl mb-2 block"></i>No client records found. Click "+ New Client" to start.</div>`;
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-folder-open text-3xl mb-2 block"></i>No ${activeTab} clients found.</div>`;
                 return;
             }
 
             list.forEach(c => {
                 const decPass = decryptText(c.tax_portal_password_encrypted);
                 const displayName = c.full_name || 'Unnamed Client';
+                const portal = c.portal_type || 'FBR';
+                const agreed = parseFloat(c.fee_agreed || 0);
+                const received = parseFloat(c.fee_received || 0);
+                const remaining = agreed - received;
+
+                let payBadgeClass = "bg-rose-100 text-rose-800";
+                if (c.payment_status === 'Paid') payBadgeClass = "bg-emerald-100 text-emerald-800";
+                if (c.payment_status === 'Partial') payBadgeClass = "bg-amber-100 text-amber-800";
+
                 const card = document.createElement('div');
                 card.className = "bg-white p-5 rounded-xl border border-slate-200 card-shadow card-shadow-hover transition space-y-3";
                 card.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
-                            <h3 class="font-bold text-slate-900 text-base">${displayName}</h3>
-                            <div class="text-xs text-slate-500 space-y-0.5 mt-0.5">
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded ${portal === 'FBR' ? 'bg-emerald-600 text-white' : 'bg-purple-600 text-white'}">${portal}</span>
+                                <h3 class="font-bold text-slate-900 text-base">${displayName}</h3>
+                            </div>
+                            <div class="text-xs text-slate-500 space-y-0.5 mt-1">
                                 <div><i class="fa-solid fa-phone text-slate-400 w-4"></i> ${c.phone || '-'}</div>
                                 <div><i class="fa-solid fa-envelope text-slate-400 w-4"></i> ${c.email || '-'}</div>
                             </div>
                         </div>
                         <div class="flex flex-col gap-1 text-[10px] items-end">
-                            <span class="px-2.5 py-0.5 rounded-full font-semibold ${c.payment_status === 'Paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${c.payment_status || 'Unpaid'}</span>
+                            <span class="px-2.5 py-0.5 rounded-full font-semibold ${payBadgeClass}">${c.payment_status || 'Unpaid'}</span>
                             <span class="px-2.5 py-0.5 rounded-full font-semibold ${c.contact_status === 'Contacted' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}">${c.contact_status || 'Not Contacted'}</span>
                         </div>
+                    </div>
+
+                    <!-- Fee Summary Box -->
+                    <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg text-[11px] border border-slate-200">
+                        <div><span class="text-slate-500 block">Deal Fee:</span><strong class="text-slate-800">Rs. ${agreed.toLocaleString()}</strong></div>
+                        <div><span class="text-slate-500 block">Received:</span><strong class="text-emerald-700">Rs. ${received.toLocaleString()}</strong></div>
+                        <div><span class="text-slate-500 block">Remaining:</span><strong class="text-rose-600">Rs. ${remaining.toLocaleString()}</strong></div>
                     </div>
 
                     <div class="bg-slate-50 p-3 rounded-lg space-y-1.5 text-xs font-mono border border-slate-100">
@@ -306,36 +430,20 @@
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Password copied!', showConfirmButton: false, timer: 1500 });
         }
 
-        function filterClients() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const payF = document.getElementById('paymentFilter').value;
-            const conF = document.getElementById('contactFilter').value;
-
-            const filtered = clientsData.filter(c => {
-                const name = (c.full_name || '').toLowerCase();
-                const phone = c.phone || '';
-                const cnic = c.cnic || '';
-                const ntn = (c.ntn || '').toLowerCase();
-
-                const matchSearch = name.includes(query) || phone.includes(query) || cnic.includes(query) || ntn.includes(query);
-                const matchPay = payF === 'ALL' || c.payment_status === payF;
-                const matchCon = conF === 'ALL' || c.contact_status === conF;
-                return matchSearch && matchPay && matchCon;
-            });
-            renderClients(filtered);
-        }
-
         async function saveClient(e) {
             e.preventDefault();
             const id = document.getElementById('clientId').value;
             const passVal = document.getElementById('taxPassword').value;
 
             const payload = {
+                portal_type: document.getElementById('portalType').value,
                 full_name: document.getElementById('fullName').value || 'Unnamed Client',
                 phone: document.getElementById('phone').value || '',
                 email: document.getElementById('email').value || '',
                 cnic: document.getElementById('cnic').value || '',
                 ntn: document.getElementById('ntn').value || '',
+                fee_agreed: parseFloat(document.getElementById('feeAgreed').value) || 0,
+                fee_received: parseFloat(document.getElementById('feeReceived').value) || 0,
                 tax_portal_password_encrypted: passVal ? encryptText(passVal) : '',
                 payment_status: document.getElementById('paymentStatus').value,
                 contact_status: document.getElementById('contactStatus').value,
@@ -349,7 +457,7 @@
             if (res.error) {
                 Swal.fire({ icon: 'error', title: 'Save Failed', text: res.error.message });
             } else {
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Client Saved!', showConfirmButton: false, timer: 1500 });
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved Successfully!', showConfirmButton: false, timer: 1500 });
                 closeClientModal();
                 fetchClients();
             }
@@ -359,11 +467,14 @@
             const c = clientsData.find(x => x.id === id);
             if (!c) return;
             document.getElementById('clientId').value = c.id;
+            document.getElementById('portalType').value = c.portal_type || 'FBR';
             document.getElementById('fullName').value = c.full_name || '';
             document.getElementById('phone').value = c.phone || '';
             document.getElementById('email').value = c.email || '';
             document.getElementById('cnic').value = c.cnic || '';
             document.getElementById('ntn').value = c.ntn || '';
+            document.getElementById('feeAgreed').value = c.fee_agreed || 0;
+            document.getElementById('feeReceived').value = c.fee_received || 0;
             document.getElementById('taxPassword').value = decryptText(c.tax_portal_password_encrypted);
             document.getElementById('paymentStatus').value = c.payment_status || 'Unpaid';
             document.getElementById('contactStatus').value = c.contact_status || 'Not Contacted';
@@ -391,21 +502,25 @@
         function openClientModal() {
             document.getElementById('clientForm').reset();
             document.getElementById('clientId').value = '';
+            document.getElementById('portalType').value = activeTab === 'GTE' ? 'GTE' : 'FBR';
             document.getElementById('modalTitle').innerText = "Add Client Record";
             document.getElementById('clientModal').classList.remove('hidden');
         }
         function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
 
         function exportToCSV() {
-            let csv = "Full Name,Phone,Email,CNIC,NTN,Tax Password,Payment Status,Contact Status,Notes\n";
+            let csv = "Portal,Full Name,Phone,Email,CNIC,NTN,Fee Agreed,Fee Received,Remaining Fee,Tax Password,Payment Status,Contact Status,Notes\n";
             clientsData.forEach(c => {
-                csv += `"${c.full_name || ''}","${c.phone || ''}","${c.email || ''}","${c.cnic || ''}","${c.ntn || ''}","${decryptText(c.tax_portal_password_encrypted)}","${c.payment_status || ''}","${c.contact_status || ''}","${c.notes || ''}"\n`;
+                const agreed = parseFloat(c.fee_agreed || 0);
+                const received = parseFloat(c.fee_received || 0);
+                const remaining = agreed - received;
+                csv += `"${c.portal_type || 'FBR'}","${c.full_name || ''}","${c.phone || ''}","${c.email || ''}","${c.cnic || ''}","${c.ntn || ''}","${agreed}","${received}","${remaining}","${decryptText(c.tax_portal_password_encrypted)}","${c.payment_status || ''}","${c.contact_status || ''}","${c.notes || ''}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.setAttribute('href', url);
-            a.setAttribute('download', `Tax_Clients_Export_${new Date().toISOString().slice(0,10)}.csv`);
+            a.setAttribute('download', `Aqib_Arain_Tax_Clients_Backup_${new Date().toISOString().slice(0,10)}.csv`);
             a.click();
         }
 
