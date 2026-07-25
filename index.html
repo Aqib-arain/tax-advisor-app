@@ -30,6 +30,9 @@
 </head>
 <body class="min-h-screen pb-12 sm:pb-16">
 
+    <!-- Hidden File Input for CSV Import -->
+    <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)" class="hidden">
+
     <!-- Security PIN Lock Screen Overlay -->
     <div id="pinLockOverlay" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 text-center space-y-4 sm:space-y-5 shadow-2xl border border-slate-100">
@@ -70,6 +73,10 @@
             
             <!-- Mobile Touch Action Buttons -->
             <div class="flex items-center space-x-1 sm:space-x-2">
+                <button onclick="triggerCSVImport()" title="Import Clients from Excel CSV" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold border border-purple-200 transition flex items-center space-x-1">
+                    <i class="fa-solid fa-file-import text-purple-600 text-sm"></i>
+                    <span class="hidden md:inline">Import</span>
+                </button>
                 <button onclick="changePIN()" title="Change Security PIN" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
                     <i class="fa-solid fa-key text-amber-600"></i>
                 </button>
@@ -369,6 +376,86 @@
             } catch(e) { return cipher; }
         }
 
+        // EXCEL / GOOGLE PASSWORD MANAGER CSV IMPORT ENGINE
+        function triggerCSVImport() {
+            document.getElementById('csvFileInput').click();
+        }
+
+        function handleCSVImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const content = evt.target.result;
+                const lines = content.split(/\r\n|\n/);
+                let importedCount = 0;
+
+                lines.forEach((line, index) => {
+                    if (!line.trim()) return;
+                    
+                    // Parse CSV columns
+                    const cols = line.split(',').map(col => col.replace(/^"(.*)"$/, '$1').trim());
+                    
+                    if (cols.length >= 2) {
+                        const userName = cols[0];
+                        const password = cols[1];
+
+                        // Skip header row if "username" or "name" is in the first row
+                        if (index === 0 && (userName.toLowerCase().includes('user') || userName.toLowerCase().includes('name') || password.toLowerCase().includes('pass'))) {
+                            return;
+                        }
+
+                        if (userName && password) {
+                            const isCnic = /^\d{5}-\d{7}-\d{1}$/.test(userName);
+                            const newClient = {
+                                id: generateUUID(),
+                                portal_type: 'FBR',
+                                tax_year: '2026',
+                                atl_status: 'Active',
+                                full_name: isCnic ? 'Client (' + userName + ')' : userName,
+                                phone: '',
+                                email: '',
+                                cnic: isCnic ? userName : '',
+                                ntn: '',
+                                referred_by: 'Excel Import',
+                                fee_agreed: 0,
+                                fee_received: 0,
+                                tax_portal_password_encrypted: encryptText(password),
+                                payment_status: 'Unpaid',
+                                contact_status: 'Not Contacted',
+                                notes: 'Imported from Google Passwords / Excel'
+                            };
+
+                            clientsData.unshift(newClient);
+                            importedCount++;
+                        }
+                    }
+                });
+
+                if (importedCount > 0) {
+                    localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+                    updateCombinedFinancials();
+                    filterClients();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Import Successful!',
+                        text: `Successfully imported ${importedCount} client credentials into your vault!`
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Import Failed',
+                        text: 'Could not read usernames and passwords from the selected file. Ensure it is a valid 2-column CSV file.'
+                    });
+                }
+
+                e.target.value = '';
+            };
+
+            reader.readAsText(file);
+        }
+
         // STRICT INPUT FORMATTERS & LIMITERS
         function formatCNIC(input) {
             let v = input.value.replace(/\D/g, '');
@@ -379,13 +466,13 @@
 
         function formatPhone(input) {
             let v = input.value.replace(/\D/g, '');
-            if (v.length > 11) v = v.slice(0, 11); // Strict 11 Digits limit
+            if (v.length > 11) v = v.slice(0, 11);
             input.value = v;
         }
 
         function formatNTN(input) {
             let v = input.value.replace(/\D/g, '');
-            if (v.length > 7) v = v.slice(0, 7); // Strict 7 Digits limit
+            if (v.length > 7) v = v.slice(0, 7);
             input.value = v;
         }
 
@@ -547,7 +634,7 @@
             else statusSelect.value = 'Partial';
         }
 
-        // LOAD CLIENTS FROM LOCAL STORAGE FIRST (Bulletproof Engine)
+        // LOAD CLIENTS FROM LOCAL STORAGE FIRST
         function loadClientsData() {
             const cached = localStorage.getItem('aqib_clients_cache');
             
@@ -559,7 +646,6 @@
                 }
             }
             
-            // If completely empty, inject 1 Sample Record so screen is never blank
             if (!clientsData || clientsData.length === 0) {
                 clientsData = [
                     {
@@ -587,7 +673,6 @@
             updateCombinedFinancials();
             filterClients();
 
-            // Try background sync with Supabase if online
             if (navigator.onLine) {
                 syncWithSupabase();
             }
@@ -603,7 +688,7 @@
                     filterClients();
                 }
             } catch(err) {
-                console.warn("Supabase background sync bypassed:", err);
+                console.warn("Supabase sync bypassed:", err);
             }
         }
 
@@ -662,7 +747,6 @@
                 const matchPay = payF === 'ALL' || c.payment_status === payF;
                 const matchCon = conF === 'ALL' || c.contact_status === conF;
                 
-                // Keep GTE clients visible regardless of FBR filters
                 const matchYear = yearF === 'ALL' || portal === 'GTE' || (c.tax_year || '2026') === yearF;
                 const matchATL = atlF === 'ALL' || portal === 'GTE' || (c.atl_status || 'Active') === atlF;
 
@@ -1069,7 +1153,7 @@
             tokenClient.requestAccessToken({ prompt: 'consent' });
         }
 
-        // Initialize App with Bulletproof Data Loading
+        // Initialize App
         loadClientsData();
     </script>
 </body>
