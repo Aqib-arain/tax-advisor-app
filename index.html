@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aqib Arain - Tax & Credential Vault</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,29 +19,31 @@
     <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; -webkit-tap-highlight-color: transparent; }
         .executive-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03); }
         .executive-input { background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; }
         .executive-input:focus { border-color: #059669; outline: none; box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12); }
         tr:hover { background-color: #f1f5f9; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="min-h-screen pb-16">
+<body class="min-h-screen pb-12 sm:pb-16">
 
     <!-- Security PIN Lock Screen Overlay -->
     <div id="pinLockOverlay" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-8 text-center space-y-5 shadow-2xl border border-slate-100">
-            <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-inner">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 text-center space-y-4 sm:space-y-5 shadow-2xl border border-slate-100">
+            <div class="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-50 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-xl sm:text-2xl shadow-inner">
                 <i class="fa-solid fa-lock"></i>
             </div>
             <div>
-                <h2 class="font-extrabold text-slate-900 text-xl">Aqib Arain Vault</h2>
+                <h2 class="font-extrabold text-slate-900 text-lg sm:text-xl">Aqib Arain Vault</h2>
                 <p class="text-xs text-slate-500 mt-1">Enter 4-Digit Security PIN to Unlock</p>
             </div>
-            <input type="password" id="pinInput" maxlength="4" placeholder="••••" class="w-full text-center text-3xl tracking-widest font-mono p-3 rounded-2xl executive-input focus:ring-2 focus:ring-emerald-500 outline-none">
-            <button onclick="unlockApp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition">Unlock App</button>
-            <div class="flex justify-between items-center text-[11px] pt-2 text-slate-400">
-                <span>I Love You</span>
+            <input type="password" id="pinInput" maxlength="4" placeholder="••••" class="w-full text-center text-2xl sm:text-3xl tracking-widest font-mono p-3 rounded-2xl executive-input focus:ring-2 focus:ring-emerald-500 outline-none">
+            <button onclick="unlockApp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition text-sm">Unlock App</button>
+            <div class="flex justify-between items-center text-[11px] pt-1 text-slate-400">
+                <span>Default PIN: 1234</span>
                 <button onclick="changePIN()" class="text-emerald-600 hover:underline font-bold">Change PIN</button>
             </div>
         </div>
@@ -49,108 +51,110 @@
 
     <!-- Top Executive Header -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-3.5">
-                <div class="w-11 h-11 rounded-2xl bg-slate-900 text-emerald-400 flex items-center justify-center font-black text-xl shadow-md">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+            <!-- Brand Logo & Title -->
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-slate-900 text-emerald-400 flex items-center justify-center font-black text-base sm:text-xl shadow-md">
                     <i class="fa-solid fa-user-tie"></i>
                 </div>
                 <div>
-                    <div class="flex items-center space-x-2">
-                        <h1 class="font-extrabold text-lg text-slate-900 tracking-tight">Aqib Arain</h1>
-                        <span id="syncIndicator" class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <div class="flex items-center space-x-1.5">
+                        <h1 class="font-extrabold text-sm sm:text-lg text-slate-900 tracking-tight">Aqib Arain</h1>
+                        <span id="syncIndicator" class="text-[9px] sm:text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
                         </span>
                     </div>
-                    <p class="text-xs text-slate-500">Tax Advisor & Portal Vault</p>
+                    <p class="text-[10px] sm:text-xs text-slate-500">Tax Advisor Vault</p>
                 </div>
             </div>
             
-            <div class="flex items-center space-x-2">
-                <button onclick="changePIN()" title="Change Security PIN" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
+            <!-- Mobile Touch Action Buttons -->
+            <div class="flex items-center space-x-1 sm:space-x-2">
+                <button onclick="changePIN()" title="Change Security PIN" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
                     <i class="fa-solid fa-key text-amber-600"></i>
                 </button>
-                <button onclick="lockApp()" title="Lock App Screen" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
+                <button onclick="lockApp()" title="Lock App Screen" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
                     <i class="fa-solid fa-lock text-slate-600"></i>
                 </button>
-                <button onclick="saveToGoogleDrive()" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition flex items-center space-x-1.5" title="Auto Save to Google Drive">
+                <button onclick="saveToGoogleDrive()" title="Auto Save to Google Drive" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition flex items-center space-x-1">
                     <i class="fa-brands fa-google-drive text-emerald-600 text-sm"></i>
-                    <span class="hidden sm:inline">Drive Save</span>
+                    <span class="hidden md:inline">Drive Save</span>
                 </button>
-                <button onclick="exportToCSV()" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition flex items-center space-x-1.5" title="Download Excel CSV">
+                <button onclick="exportToCSV()" title="Download Excel CSV" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition flex items-center space-x-1">
                     <i class="fa-solid fa-file-csv text-blue-600 text-sm"></i>
-                    <span class="hidden sm:inline">CSV Download</span>
+                    <span class="hidden md:inline">CSV</span>
                 </button>
-                <button onclick="openClientModal()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center space-x-2">
-                    <i class="fa-solid fa-plus text-sm"></i>
-                    <span>New Client</span>
+                <button onclick="openClientModal()" class="px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center space-x-1 sm:space-x-2">
+                    <i class="fa-solid fa-plus text-xs sm:text-sm"></i>
+                    <span class="text-xs">New</span>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mt-4 sm:mt-8 space-y-4 sm:space-y-8">
 
-        <!-- Combined Financial Analytics Dashboard -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="executive-card p-5 rounded-2xl flex items-center justify-between">
+        <!-- Responsive Financial Analytics Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
+            <div class="executive-card p-3.5 sm:p-5 rounded-2xl flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Deal Fees</p>
-                    <h3 id="statAgreed" class="text-xl md:text-2xl font-extrabold text-slate-900 mt-1">Rs. 0</h3>
+                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Total Deals</p>
+                    <h3 id="statAgreed" class="text-base sm:text-xl md:text-2xl font-extrabold text-slate-900 mt-0.5 sm:mt-1">Rs. 0</h3>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-lg"><i class="fa-solid fa-handshake"></i></div>
+                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm sm:text-lg"><i class="fa-solid fa-handshake"></i></div>
             </div>
 
-            <div class="executive-card p-5 rounded-2xl flex items-center justify-between">
+            <div class="executive-card p-3.5 sm:p-5 rounded-2xl flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-emerald-700 uppercase tracking-wider">Combined Received</p>
-                    <h3 id="statReceived" class="text-xl md:text-2xl font-extrabold text-emerald-600 mt-1">Rs. 0</h3>
+                    <p class="text-[10px] sm:text-xs font-medium text-emerald-700 uppercase tracking-wider">Received</p>
+                    <h3 id="statReceived" class="text-base sm:text-xl md:text-2xl font-extrabold text-emerald-600 mt-0.5 sm:mt-1">Rs. 0</h3>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg"><i class="fa-solid fa-wallet"></i></div>
+                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm sm:text-lg"><i class="fa-solid fa-wallet"></i></div>
             </div>
 
-            <div class="executive-card p-5 rounded-2xl flex items-center justify-between">
+            <div class="executive-card p-3.5 sm:p-5 rounded-2xl flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-rose-700 uppercase tracking-wider">Combined Remaining</p>
-                    <h3 id="statRemaining" class="text-xl md:text-2xl font-extrabold text-rose-600 mt-1">Rs. 0</h3>
+                    <p class="text-[10px] sm:text-xs font-medium text-rose-700 uppercase tracking-wider">Remaining</p>
+                    <h3 id="statRemaining" class="text-base sm:text-xl md:text-2xl font-extrabold text-rose-600 mt-0.5 sm:mt-1">Rs. 0</h3>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg"><i class="fa-solid fa-scale-unbalanced"></i></div>
+                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-sm sm:text-lg"><i class="fa-solid fa-scale-unbalanced"></i></div>
             </div>
 
-            <div class="executive-card p-5 rounded-2xl flex items-center justify-between">
+            <div class="executive-card p-3.5 sm:p-5 rounded-2xl flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Records</p>
-                    <h3 id="statTotalClients" class="text-xl md:text-2xl font-extrabold text-blue-600 mt-1">0</h3>
+                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Active Clients</p>
+                    <h3 id="statTotalClients" class="text-base sm:text-xl md:text-2xl font-extrabold text-blue-600 mt-0.5 sm:mt-1">0</h3>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg"><i class="fa-solid fa-users"></i></div>
+                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm sm:text-lg"><i class="fa-solid fa-users"></i></div>
             </div>
         </div>
 
-        <!-- Segmented Portal Tabs & Search Controls -->
-        <div class="space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+        <!-- Scrollable Tabs & Search Controls -->
+        <div class="space-y-3 sm:space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-200 pb-3 sm:pb-4">
                 <!-- Segmented Tabs -->
-                <div class="bg-slate-200/70 p-1.5 rounded-2xl flex space-x-1 text-xs font-medium">
-                    <button onclick="switchPortalTab('ALL')" id="tabALL" class="px-5 py-2.5 rounded-xl transition flex items-center space-x-2 bg-white text-slate-900 font-bold shadow-sm">
-                        <i class="fa-solid fa-layer-group text-slate-700"></i>
+                <div class="bg-slate-200/70 p-1 sm:p-1.5 rounded-2xl flex space-x-1 text-xs font-medium overflow-x-auto no-scrollbar">
+                    <button onclick="switchPortalTab('ALL')" id="tabALL" class="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 bg-white text-slate-900 font-bold shadow-sm whitespace-nowrap">
+                        <i class="fa-solid fa-layer-group text-slate-700 text-xs"></i>
                         <span>All Clients</span>
-                        <span id="badgeALL" class="ml-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 text-[10px] font-bold">0</span>
+                        <span id="badgeALL" class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-800 text-[9px] sm:text-[10px] font-bold">0</span>
                     </button>
-                    <button onclick="switchPortalTab('FBR')" id="tabFBR" class="px-5 py-2.5 rounded-xl transition flex items-center space-x-2 text-slate-600 hover:text-slate-900">
-                        <i class="fa-solid fa-building-columns text-emerald-600"></i>
+                    <button onclick="switchPortalTab('FBR')" id="tabFBR" class="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 whitespace-nowrap">
+                        <i class="fa-solid fa-building-columns text-emerald-600 text-xs"></i>
                         <span>FBR Portal</span>
-                        <span id="badgeFBR" class="ml-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">0</span>
+                        <span id="badgeFBR" class="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] sm:text-[10px] font-bold">0</span>
                     </button>
-                    <button onclick="switchPortalTab('GTE')" id="tabGTE" class="px-5 py-2.5 rounded-xl transition flex items-center space-x-2 text-slate-600 hover:text-slate-900">
-                        <i class="fa-solid fa-briefcase text-indigo-600"></i>
+                    <button onclick="switchPortalTab('GTE')" id="tabGTE" class="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 whitespace-nowrap">
+                        <i class="fa-solid fa-briefcase text-indigo-600 text-xs"></i>
                         <span>GTE Portal</span>
-                        <span id="badgeGTE" class="ml-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-bold">0</span>
+                        <span id="badgeGTE" class="ml-1 px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[9px] sm:text-[10px] font-bold">0</span>
                     </button>
                 </div>
 
                 <!-- Filters -->
-                <div class="flex flex-wrap gap-2 text-xs">
-                    <select id="yearFilter" onchange="filterClients()" class="executive-input rounded-xl px-3 py-2 bg-white text-slate-700 font-bold">
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5 sm:gap-2 text-xs">
+                    <select id="yearFilter" onchange="filterClients()" class="executive-input rounded-xl px-2.5 py-2 bg-white text-slate-700 font-bold text-xs">
                         <option value="ALL">All Tax Years</option>
                         <option value="2027">TY 2027</option>
                         <option value="2026">TY 2026</option>
@@ -158,18 +162,18 @@
                         <option value="2024">TY 2024</option>
                         <option value="2023">TY 2023</option>
                     </select>
-                    <select id="atlFilter" onchange="filterClients()" class="executive-input rounded-xl px-3 py-2 bg-white text-slate-700 font-bold">
+                    <select id="atlFilter" onchange="filterClients()" class="executive-input rounded-xl px-2.5 py-2 bg-white text-slate-700 font-bold text-xs">
                         <option value="ALL">All ATL Status</option>
                         <option value="Active">🟢 ATL Active</option>
                         <option value="Inactive">🔴 ATL Inactive</option>
                     </select>
-                    <select id="paymentFilter" onchange="filterClients()" class="executive-input rounded-xl px-3 py-2 bg-white text-slate-700">
+                    <select id="paymentFilter" onchange="filterClients()" class="executive-input rounded-xl px-2.5 py-2 bg-white text-slate-700 text-xs">
                         <option value="ALL">All Payments</option>
                         <option value="Paid">Paid Only</option>
                         <option value="Partial">Partial Pay</option>
                         <option value="Unpaid">Unpaid Only</option>
                     </select>
-                    <select id="contactFilter" onchange="filterClients()" class="executive-input rounded-xl px-3 py-2 bg-white text-slate-700">
+                    <select id="contactFilter" onchange="filterClients()" class="executive-input rounded-xl px-2.5 py-2 bg-white text-slate-700 text-xs">
                         <option value="ALL">All Contacts</option>
                         <option value="Contacted">Contacted</option>
                         <option value="Not Contacted">Not Contacted</option>
@@ -179,14 +183,14 @@
 
             <!-- Search Input -->
             <div class="relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs sm:text-sm"></i>
                 <input type="text" id="searchInput" oninput="filterClients()" placeholder="Search Name, Phone, CNIC, NTN, or Reference Name/CNIC..." 
-                    class="w-full pl-11 pr-4 py-3 rounded-2xl executive-input text-sm placeholder-slate-400 shadow-sm">
+                    class="w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 rounded-2xl executive-input text-xs sm:text-sm placeholder-slate-400 shadow-sm">
             </div>
         </div>
 
-        <!-- LIST VIEW DATA TABLE -->
-        <div class="executive-card rounded-3xl overflow-hidden shadow-sm">
+        <!-- DESKTOP TABLE VIEW (Visible on tablet/laptop screens) -->
+        <div class="hidden md:block executive-card rounded-3xl overflow-hidden shadow-sm">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-slate-100/80 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
@@ -200,27 +204,32 @@
                         </tr>
                     </thead>
                     <tbody id="clientTableBody" class="divide-y divide-slate-200/70">
-                        <!-- Dynamic List Rows Loaded Here -->
+                        <!-- Desktop Table Rows -->
                     </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- MOBILE CARDS CONTAINER (Visible on phones) -->
+        <div id="mobileCardsContainer" class="block md:hidden space-y-3">
+            <!-- Dynamic Mobile Cards -->
+        </div>
+
     </div>
 
-    <!-- Modal Drawer -->
-    <div id="clientModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+    <!-- Modal Drawer (Optimized for Mobile Screens) -->
+    <div id="clientModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-end sm:items-center p-0 sm:p-4 hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-3.5 shadow-2xl border border-slate-100 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h2 id="modalTitle" class="font-bold text-slate-900 text-lg">Add Client Record</h2>
-                <button onclick="closeClientModal()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h2 id="modalTitle" class="font-bold text-slate-900 text-base sm:text-lg">Add Client Record</h2>
+                <button onclick="closeClientModal()" class="text-slate-400 hover:text-slate-600 transition p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <form id="clientForm" onsubmit="saveClient(event)" class="space-y-3.5 text-xs">
+            <form id="clientForm" onsubmit="saveClient(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="clientId">
 
                 <!-- Row 1: Portal & Tax Year -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div id="wrapperPortalType" class="col-span-1">
                         <label class="block font-medium text-slate-700 mb-1">Portal Category</label>
                         <select id="portalType" onchange="togglePortalFields()" class="w-full p-2.5 rounded-xl executive-input font-bold text-emerald-700 bg-white">
@@ -241,7 +250,7 @@
                 </div>
 
                 <!-- Row 2: Full Name & ATL Status -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div id="wrapperFullName" class="col-span-1">
                         <label class="block font-medium text-slate-700 mb-1">Full Name</label>
                         <input type="text" id="fullName" placeholder="Client Name" class="w-full p-2.5 rounded-xl executive-input">
@@ -256,7 +265,7 @@
                 </div>
 
                 <!-- Row 3: Phone & Email -->
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">Phone Number</label>
                         <input type="text" id="phone" placeholder="03001234567" class="w-full p-2.5 rounded-xl executive-input">
@@ -268,7 +277,7 @@
                 </div>
 
                 <!-- Row 4: CNIC & NTN (Hidden for GTE) -->
-                <div id="rowCnicNtn" class="grid grid-cols-2 gap-3">
+                <div id="rowCnicNtn" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">CNIC Number</label>
                         <input type="text" id="cnic" placeholder="12345-1234567-1" oninput="formatCNIC(this)" maxlength="15" class="w-full p-2.5 rounded-xl executive-input font-mono">
@@ -286,9 +295,9 @@
                 </div>
 
                 <!-- Fee Deal Section -->
-                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
+                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                     <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5"><i class="fa-solid fa-coins text-amber-500"></i> Fee & Payment Deal</span>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-2.5">
                         <div>
                             <label class="block font-medium text-slate-600 mb-1">Deal Fee (Rs.)</label>
                             <input type="number" id="feeAgreed" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2 rounded-xl executive-input font-mono">
@@ -298,7 +307,7 @@
                             <input type="number" id="feeReceived" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2 rounded-xl executive-input font-mono font-bold text-emerald-700">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 pt-1">
+                    <div class="grid grid-cols-2 gap-2.5 pt-1">
                         <div>
                             <label class="block font-medium text-slate-600 mb-1">Payment Status</label>
                             <select id="paymentStatus" class="w-full p-2 rounded-xl executive-input bg-white">
@@ -329,8 +338,8 @@
                 </div>
 
                 <div class="pt-3 flex justify-end space-x-2 border-t border-slate-100">
-                    <button type="button" onclick="closeClientModal()" class="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 transition">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition">Save Client Record</button>
+                    <button type="button" onclick="closeClientModal()" class="px-4 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition">Save Client Record</button>
                 </div>
             </form>
         </div>
@@ -413,9 +422,9 @@
             const passwordWrap = document.getElementById('wrapperTaxPassword');
 
             if (portal === 'GTE') {
-                portalWrap.className = "col-span-2";
+                portalWrap.className = "col-span-1 sm:col-span-2";
                 taxYearWrap.classList.add('hidden');
-                fullNameWrap.className = "col-span-2";
+                fullNameWrap.className = "col-span-1 sm:col-span-2";
                 atlWrap.classList.add('hidden');
                 cnicNtnRow.classList.add('hidden');
                 passwordWrap.classList.add('hidden');
@@ -443,36 +452,74 @@
             }
         }
 
-        // WhatsApp Messaging Engine
+        // 7 CUSTOM ROMAN URDU WHATSAPP MESSAGING ENGINE
         function openWhatsApp(phone, name, agreed, received, cnic, pass) {
             if (!phone) {
-                Swal.fire({ icon: 'warning', title: 'No Phone Number', text: 'This client has no phone number saved.' });
+                Swal.fire({ icon: 'warning', title: 'Koi Phone Number Nahi Hai', text: 'Is client ka phone number save nahi hai.' });
                 return;
             }
             let cleanPhone = phone.replace(/\D/g, '');
             if (cleanPhone.startsWith('0')) cleanPhone = '92' + cleanPhone.substring(1);
 
             const remaining = (parseFloat(agreed) || 0) - (parseFloat(received) || 0);
+            const clientName = name || 'Client';
+            const cnicNum = cnic || 'N/A';
+            const portalPass = pass || 'N/A';
 
             Swal.fire({
-                title: 'WhatsApp Message Options',
-                text: `Send direct message to ${name || 'Client'}:`,
-                showDenyButton: true,
+                title: '📱 WhatsApp Message Options',
+                html: `
+                    <div class="text-left text-xs space-y-2 font-sans pt-2">
+                        <p class="text-slate-600 font-medium mb-2"><strong>${clientName}</strong> ko konsa message bhejna hai?</p>
+                        <select id="waMessageSelect" class="w-full p-3 rounded-xl border border-slate-300 text-xs bg-slate-50 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="1">💰 1. Fee Balance Reminder</option>
+                            <option value="2">✅ 2. Filing Confirmation</option>
+                            <option value="3">🔑 3. Share Credentials (CNIC & Password)</option>
+                            <option value="4">📞 4. Call Request (Information Needed)</option>
+                            <option value="5">🟢 5. ATL Active Status Confirmation</option>
+                            <option value="6">⚠️ 6. FBR Notice Alert</option>
+                            <option value="7">📅 7. Tax Season 2026 Filing Invitation</option>
+                        </select>
+                    </div>
+                `,
                 showCancelButton: true,
-                confirmButtonText: '💰 Fee Balance Reminder',
-                denyButtonText: '✅ Filing Confirmation',
-                cancelButtonText: '🔑 Share Credentials',
-                background: '#ffffff'
+                confirmButtonText: '<i class="fa-brands fa-whatsapp mr-1"></i> Send Message',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#64748b'
             }).then((result) => {
-                let msg = '';
                 if (result.isConfirmed) {
-                    msg = `Respected Client ${name}, your remaining tax fee balance is Rs. ${remaining.toLocaleString()}. Please settle at your earliest convenience. - Aqib Arain Tax Advisor`;
-                } else if (result.isDenied) {
-                    msg = `Dear ${name}, your Income Tax Return has been successfully filed. Thank you for choosing Aqib Arain Tax Advisory!`;
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    msg = `Dear ${name}, your Tax Portal Credentials:\nCNIC: ${cnic}\nPassword: ${pass}\n- Aqib Arain Tax Vault`;
+                    const choice = document.getElementById('waMessageSelect').value;
+                    let msg = '';
+
+                    switch(choice) {
+                        case '1':
+                            msg = `Mohtaram ${clientName} Sahab, aap ki Tax Return file ho chuki hai. Aap ki baqi rehne wali fees Rs. ${remaining.toLocaleString()} hai. Baraye meherbani jald az jald adaigi mukammal karein. Shukriya! - Aqib Arain`;
+                            break;
+                        case '2':
+                            msg = `Mohtaram ${clientName} Sahab, Assalam-o-Alaikum! Aap ki Income Tax Return ba-aasan tariqay se successful file ho gayi hai. Aqib Arain shukriya!`;
+                            break;
+                        case '3':
+                            msg = `Mohtaram ${clientName} Sahab, aap ke Tax Portal ke login details yeh hain:\n\n📌 CNIC: ${cnicNum}\n🔑 Password: ${portalPass}\n\nIn details ko apne paas mehfooz rakhein. - Aqib Arain`;
+                            break;
+                        case '4':
+                            msg = `Mohtaram ${clientName} Sahab, aap ki Tax Return tayyar karne ke liye kuch malumat ke zarorat hay. Baraye meherbani jab ap free hon mujha call kejea ga taake kaam shuru kiya ja sakay. - Aqib Arain`;
+                            break;
+                        case '5':
+                            msg = `Mohtaram ${clientName} Sahab, Mubarak ho! FBR Active Taxpayer List (ATL) mein aap ka naam Active (🟢) ho chuka hai. Aap ab Active Filer hain. - Aqib Arain`;
+                            break;
+                        case '6':
+                            msg = `Mohtaram ${clientName} Sahab, FBR Portal par aap ke naam par ek Statutory Notice/Letter aya hai. Is ka wqt par jawab dena zaroori hai. Baraye meherbani jald az jald mujh say rabta karein. - Aqib Arain`;
+                            break;
+                        case '7':
+                            msg = `Mohtaram ${clientName} Sahab, Assalam-o-Alaikum! Tax Year 2026 ki Income Tax Returns filing shuru ho chuki hai. FBR ki late filing penalty (25000) se bachne ke liye aaj hi apni Return file karwayein. - Aqib Arain`;
+                            break;
+                    }
+
+                    if (msg) {
+                        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+                    }
                 }
-                if (msg) window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
             });
         }
 
@@ -489,11 +536,11 @@
         function updateOnlineStatus() {
             const ind = document.getElementById('syncIndicator');
             if (navigator.onLine) {
-                ind.className = "text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded-full flex items-center gap-1";
+                ind.className = "text-[9px] sm:text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1";
                 ind.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online`;
                 fetchClients();
             } else {
-                ind.className = "text-[10px] bg-amber-50 text-amber-700 border border-amber-200 font-bold px-2 py-0.5 rounded-full flex items-center gap-1";
+                ind.className = "text-[9px] sm:text-[10px] bg-amber-50 text-amber-700 border border-amber-200 font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1";
                 ind.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Offline (Saved Locally)`;
                 
                 const cached = localStorage.getItem('aqib_clients_cache');
@@ -553,9 +600,9 @@
             ['ALL', 'FBR', 'GTE'].forEach(t => {
                 const btn = document.getElementById(`tab${t}`);
                 if (t === tab) {
-                    btn.className = "px-5 py-2.5 rounded-xl transition flex items-center space-x-2 bg-white text-slate-900 font-bold shadow-sm";
+                    btn.className = "px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 bg-white text-slate-900 font-bold shadow-sm whitespace-nowrap";
                 } else {
-                    btn.className = "px-5 py-2.5 rounded-xl transition flex items-center space-x-2 text-slate-600 hover:text-slate-900";
+                    btn.className = "px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 whitespace-nowrap";
                 }
             });
             filterClients();
@@ -587,16 +634,21 @@
                 return matchTab && matchSearch && matchPay && matchCon && matchYear && matchATL;
             });
 
-            renderClientsList(filtered);
+            renderClientsResponsive(filtered);
         }
 
-        // RENDER LIST TABLE VIEW
-        function renderClientsList(list) {
+        // HYBRID RESPONSIVE RENDER ENGINE (Desktop Table + Mobile Touch Cards)
+        function renderClientsResponsive(list) {
             const tbody = document.getElementById('clientTableBody');
+            const mobileContainer = document.getElementById('mobileCardsContainer');
+            
             tbody.innerHTML = '';
+            mobileContainer.innerHTML = '';
 
             if (list.length === 0) {
+                const emptyHTML = `<div class="text-center py-12 text-slate-400 font-medium executive-card rounded-2xl"><i class="fa-solid fa-folder-open text-3xl mb-2 block text-slate-300"></i>No ${activeTab} clients found.</div>`;
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400 font-medium"><i class="fa-solid fa-folder-open text-3xl mb-2 block text-slate-300"></i>No ${activeTab} clients found.</td></tr>`;
+                mobileContainer.innerHTML = emptyHTML;
                 return;
             }
 
@@ -614,6 +666,7 @@
                 if (c.payment_status === 'Paid') { payBadgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200"; }
                 if (c.payment_status === 'Partial') { payBadgeClass = "bg-amber-50 text-amber-700 border-amber-200"; }
 
+                // 1. DESKTOP TABLE ROW
                 const tr = document.createElement('tr');
                 tr.className = "transition";
                 tr.innerHTML = `
@@ -671,12 +724,74 @@
                     </td>
                 `;
                 tbody.appendChild(tr);
+
+                // 2. MOBILE CARD (TOUCH OPTIMIZED FOR PHONES)
+                const mCard = document.createElement('div');
+                mCard.className = "executive-card p-4 rounded-2xl space-y-3 relative";
+                mCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <span class="px-2 py-0.5 text-[9px] font-black rounded ${portal === 'FBR' ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-indigo-800'}">${portal}</span>
+                                ${portal === 'FBR' ? `<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-blue-50 text-blue-700">TY ${year}</span>` : ''}
+                                ${portal === 'FBR' ? `<span class="px-2 py-0.5 text-[9px] font-bold rounded ${atl === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">${atl === 'Active' ? '🟢 ATL' : '🔴 Inactive'}</span>` : ''}
+                            </div>
+                            <h3 class="font-extrabold text-slate-900 text-base">${displayName}</h3>
+                            <div class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                                <span><i class="fa-solid fa-phone text-slate-400"></i> ${c.phone || '-'}</span>
+                                ${c.phone ? `<button onclick="openWhatsApp('${c.phone}', '${displayName}', '${agreed}', '${received}', '${c.cnic || ''}', '${decPass}')" class="text-emerald-600 font-bold text-sm"><i class="fa-brands fa-whatsapp font-bold"></i></button>` : ''}
+                            </div>
+                            ${c.referred_by ? `<div class="text-[11px] text-indigo-600 font-medium mt-0.5"><i class="fa-solid fa-user-tag text-[9px] mr-1"></i>Ref: ${c.referred_by}</div>` : ''}
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${payBadgeClass}">${c.payment_status || 'Unpaid'}</span>
+                    </div>
+
+                    <!-- Financial Summary -->
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs flex justify-between">
+                        <div><span class="text-slate-400">Agreed:</span> <strong>Rs. ${agreed.toLocaleString()}</strong></div>
+                        <div><span class="text-emerald-600 font-semibold">Rec:</span> <strong class="text-emerald-700">Rs. ${received.toLocaleString()}</strong></div>
+                        <div><span class="text-rose-500">Rem:</span> <strong class="text-rose-600">Rs. ${remaining.toLocaleString()}</strong></div>
+                    </div>
+
+                    <!-- CNIC / Password Box -->
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs space-y-1 font-mono">
+                        ${c.cnic ? `<div class="flex justify-between"><span class="text-slate-400 font-sans">CNIC:</span> <strong>${c.cnic}</strong></div>` : ''}
+                        ${decPass ? `
+                            <div class="flex justify-between items-center pt-1 border-t border-slate-200">
+                                <span class="text-slate-400 font-sans">Pass:</span>
+                                <div class="flex items-center space-x-2">
+                                    <span id="mpass-${c.id}" class="text-slate-900 font-bold tracking-wider">••••••••</span>
+                                    <button onclick="toggleMobilePassword('${c.id}', '${decPass}')" class="text-slate-400"><i id="meye-${c.id}" class="fa-solid fa-eye text-xs"></i></button>
+                                    <button onclick="copyPassword('${decPass}')" class="text-emerald-600"><i class="fa-regular fa-copy text-xs"></i></button>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="flex justify-end items-center gap-2 pt-1 border-t border-slate-100 text-xs">
+                        <button onclick="editClient('${c.id}')" class="px-3 py-1.5 bg-slate-100 text-blue-700 font-bold rounded-lg"><i class="fa-solid fa-pen mr-1"></i> Edit</button>
+                        <button onclick="deleteClient('${c.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-700 font-bold rounded-lg"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
+                    </div>
+                `;
+                mobileContainer.appendChild(mCard);
             });
         }
 
         function togglePassword(id, rawPassword) {
             const el = document.getElementById(`pass-${id}`);
             const icon = document.getElementById(`eye-${id}`);
+            if (el.innerText === '••••••••') {
+                el.innerText = rawPassword;
+                icon.className = 'fa-solid fa-eye-slash text-xs';
+            } else {
+                el.innerText = '••••••••';
+                icon.className = 'fa-solid fa-eye text-xs';
+            }
+        }
+
+        function toggleMobilePassword(id, rawPassword) {
+            const el = document.getElementById(`mpass-${id}`);
+            const icon = document.getElementById(`meye-${id}`);
             if (el.innerText === '••••••••') {
                 el.innerText = rawPassword;
                 icon.className = 'fa-solid fa-eye-slash text-xs';
