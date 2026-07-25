@@ -86,7 +86,7 @@
                 </button>
                 <button onclick="openClientModal()" class="px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center space-x-1 sm:space-x-2">
                     <i class="fa-solid fa-plus text-xs sm:text-sm"></i>
-                    <span class="text-xs">New</span>
+                    <span class="text-xs">New Client</span>
                 </button>
             </div>
         </div>
@@ -356,6 +356,12 @@
         let activeTab = 'ALL';
         let APP_PIN = localStorage.getItem('aqib_app_pin') || '1234';
 
+        function generateUUID() {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+
         function encryptText(text) { return text ? CryptoJS.AES.encrypt(text, SECRET_KEY).toString() : ''; }
         function decryptText(cipher) { 
             if (!cipher) return '';
@@ -372,7 +378,6 @@
             input.value = v;
         }
 
-        // Change Security PIN Engine
         function changePIN() {
             Swal.fire({
                 title: 'Change Security PIN',
@@ -411,7 +416,6 @@
             });
         }
 
-        // Dynamic Form Field Visibility for GTE vs FBR
         function togglePortalFields() {
             const portal = document.getElementById('portalType').value;
             const portalWrap = document.getElementById('wrapperPortalType');
@@ -438,7 +442,6 @@
             }
         }
 
-        // Lock Engine
         function lockApp() {
             document.getElementById('pinInput').value = '';
             document.getElementById('pinLockOverlay').classList.remove('hidden');
@@ -452,7 +455,7 @@
             }
         }
 
-        // 7 CUSTOM ROMAN URDU WHATSAPP MESSAGING ENGINE
+        // 7 ROMAN URDU WHATSAPP MESSAGES
         function openWhatsApp(phone, name, agreed, received, cnic, pass) {
             if (!phone) {
                 Swal.fire({ icon: 'warning', title: 'Koi Phone Number Nahi Hai', text: 'Is client ka phone number save nahi hai.' });
@@ -628,8 +631,10 @@
                 const matchSearch = name.includes(query) || phone.includes(query) || cnic.includes(query) || ntn.includes(query) || ref.includes(query);
                 const matchPay = payF === 'ALL' || c.payment_status === payF;
                 const matchCon = conF === 'ALL' || c.contact_status === conF;
-                const matchYear = yearF === 'ALL' || (c.tax_year || '2026') === yearF;
-                const matchATL = atlF === 'ALL' || (c.atl_status || 'Active') === atlF;
+                
+                // Allow GTE clients to remain visible when filtering FBR tax years or ATL status
+                const matchYear = yearF === 'ALL' || portal === 'GTE' || (c.tax_year || '2026') === yearF;
+                const matchATL = atlF === 'ALL' || portal === 'GTE' || (c.atl_status || 'Active') === atlF;
 
                 return matchTab && matchSearch && matchPay && matchCon && matchYear && matchATL;
             });
@@ -637,7 +642,6 @@
             renderClientsResponsive(filtered);
         }
 
-        // HYBRID RESPONSIVE RENDER ENGINE (Desktop Table + Mobile Touch Cards)
         function renderClientsResponsive(list) {
             const tbody = document.getElementById('clientTableBody');
             const mobileContainer = document.getElementById('mobileCardsContainer');
@@ -646,13 +650,23 @@
             mobileContainer.innerHTML = '';
 
             if (list.length === 0) {
-                const emptyHTML = `<div class="text-center py-12 text-slate-400 font-medium executive-card rounded-2xl"><i class="fa-solid fa-folder-open text-3xl mb-2 block text-slate-300"></i>No ${activeTab} clients found.</div>`;
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400 font-medium"><i class="fa-solid fa-folder-open text-3xl mb-2 block text-slate-300"></i>No ${activeTab} clients found.</td></tr>`;
+                const emptyHTML = `
+                    <div class="text-center py-12 text-slate-400 font-medium executive-card rounded-2xl p-6">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3 block text-slate-300"></i>
+                        <p class="text-slate-600 font-bold text-sm">No clients found matching filters.</p>
+                        <p class="text-xs text-slate-400 mt-1 mb-4">Click below to add a client record to your vault.</p>
+                        <button onclick="openClientModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Add New Client
+                        </button>
+                    </div>`;
+                
+                tbody.innerHTML = `<tr><td colspan="6" class="p-0">${emptyHTML}</td></tr>`;
                 mobileContainer.innerHTML = emptyHTML;
                 return;
             }
 
             list.forEach(c => {
+                const cid = c.id || generateUUID();
                 const decPass = decryptText(c.tax_portal_password_encrypted);
                 const displayName = c.full_name || 'Unnamed Client';
                 const portal = c.portal_type || 'FBR';
@@ -710,22 +724,22 @@
 
                     <td class="py-3.5 px-4 align-top font-mono text-xs">
                         <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-xl w-fit">
-                            <span id="pass-${c.id}" class="text-slate-900 font-bold tracking-wider">${decPass ? '••••••••' : '-'}</span>
+                            <span id="pass-${cid}" class="text-slate-900 font-bold tracking-wider">${decPass ? '••••••••' : '-'}</span>
                             ${decPass ? `
-                                <button onclick="togglePassword('${c.id}', '${decPass}')" class="text-slate-400 hover:text-slate-700"><i id="eye-${c.id}" class="fa-solid fa-eye text-xs"></i></button>
+                                <button onclick="togglePassword('${cid}', '${decPass}')" class="text-slate-400 hover:text-slate-700"><i id="eye-${cid}" class="fa-solid fa-eye text-xs"></i></button>
                                 <button onclick="copyPassword('${decPass}')" class="text-emerald-600 hover:text-emerald-800"><i class="fa-regular fa-copy text-xs"></i></button>
                             ` : ''}
                         </div>
                     </td>
 
                     <td class="py-3.5 px-4 align-top text-right space-x-2 text-xs">
-                        <button onclick="editClient('${c.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-blue-700 font-bold rounded-lg transition"><i class="fa-solid fa-pen"></i> Edit</button>
-                        <button onclick="deleteClient('${c.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="editClient('${cid}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-blue-700 font-bold rounded-lg transition"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="deleteClient('${cid}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
 
-                // 2. MOBILE CARD (TOUCH OPTIMIZED FOR PHONES)
+                // 2. MOBILE TOUCH CARD
                 const mCard = document.createElement('div');
                 mCard.className = "executive-card p-4 rounded-2xl space-y-3 relative";
                 mCard.innerHTML = `
@@ -760,8 +774,8 @@
                             <div class="flex justify-between items-center pt-1 border-t border-slate-200">
                                 <span class="text-slate-400 font-sans">Pass:</span>
                                 <div class="flex items-center space-x-2">
-                                    <span id="mpass-${c.id}" class="text-slate-900 font-bold tracking-wider">••••••••</span>
-                                    <button onclick="toggleMobilePassword('${c.id}', '${decPass}')" class="text-slate-400"><i id="meye-${c.id}" class="fa-solid fa-eye text-xs"></i></button>
+                                    <span id="mpass-${cid}" class="text-slate-900 font-bold tracking-wider">••••••••</span>
+                                    <button onclick="toggleMobilePassword('${cid}', '${decPass}')" class="text-slate-400"><i id="meye-${cid}" class="fa-solid fa-eye text-xs"></i></button>
                                     <button onclick="copyPassword('${decPass}')" class="text-emerald-600"><i class="fa-regular fa-copy text-xs"></i></button>
                                 </div>
                             </div>
@@ -769,8 +783,8 @@
                     </div>
 
                     <div class="flex justify-end items-center gap-2 pt-1 border-t border-slate-100 text-xs">
-                        <button onclick="editClient('${c.id}')" class="px-3 py-1.5 bg-slate-100 text-blue-700 font-bold rounded-lg"><i class="fa-solid fa-pen mr-1"></i> Edit</button>
-                        <button onclick="deleteClient('${c.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-700 font-bold rounded-lg"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
+                        <button onclick="editClient('${cid}')" class="px-3 py-1.5 bg-slate-100 text-blue-700 font-bold rounded-lg"><i class="fa-solid fa-pen mr-1"></i> Edit</button>
+                        <button onclick="deleteClient('${cid}')" class="px-3 py-1.5 bg-rose-50 text-rose-700 font-bold rounded-lg"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
                     </div>
                 `;
                 mobileContainer.appendChild(mCard);
@@ -828,7 +842,7 @@
                 payment_status: document.getElementById('paymentStatus').value,
                 contact_status: document.getElementById('contactStatus').value,
                 notes: document.getElementById('notes').value || '',
-                id: id || crypto.randomUUID()
+                id: id || generateUUID()
             };
 
             if (id) {
@@ -843,9 +857,13 @@
             closeClientModal();
 
             if (navigator.onLine) {
-                if (id) await db.from('clients').update(payload).eq('id', id);
-                else await db.from('clients').insert([payload]);
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved & Synced!', showConfirmButton: false, timer: 1500 });
+                try {
+                    if (id) await db.from('clients').update(payload).eq('id', id);
+                    else await db.from('clients').insert([payload]);
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved & Synced!', showConfirmButton: false, timer: 1500 });
+                } catch(e) {
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Saved Locally', showConfirmButton: false, timer: 2000 });
+                }
             } else {
                 Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Saved Locally (Offline)', showConfirmButton: false, timer: 2000 });
             }
@@ -894,7 +912,7 @@
                 filterClients();
 
                 if (navigator.onLine) {
-                    await db.from('clients').delete().eq('id', id);
+                    try { await db.from('clients').delete().eq('id', id); } catch(e) {}
                 }
             }
         }
