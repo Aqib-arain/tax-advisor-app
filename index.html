@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aqib Arain - Tax & Credential Vault</title>
+    <title>Aqib Arain - Executive Tax & Portal Vault</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
+    <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,198 +15,224 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
-        .card-shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03); }
-        .card-shadow-hover:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04); }
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f17; color: #f8fafc; }
+        .glass-card { background: rgba(18, 24, 38, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.07); }
+        .glass-card-hover { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card-hover:hover { border-color: rgba(16, 185, 129, 0.3); transform: translateY(-2px); box-shadow: 0 12px 24px -10px rgba(16, 185, 129, 0.15); }
+        .glass-input { background: rgba(11, 15, 23, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); color: #f8fafc; }
+        .glass-input:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f17; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
     </style>
 </head>
-<body class="min-h-screen pb-12">
+<body class="min-h-screen pb-16">
 
-    <!-- Top Navigation Bar -->
-    <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
-                    <i class="fa-solid fa-user-tie"></i>
+    <!-- Top Navigation Header -->
+    <nav class="border-b border-slate-800/80 bg-[#0b0f17]/90 backdrop-blur-xl sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 p-0.5 shadow-lg shadow-emerald-500/20">
+                    <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-emerald-400 font-black text-xl">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
                 </div>
                 <div>
-                    <h1 class="font-bold text-base text-white tracking-tight">Aqib Arain</h1>
-                    <p class="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold">Tax Advisor & Portal Vault</p>
+                    <h1 class="font-extrabold text-lg text-white tracking-tight flex items-center gap-2">
+                        Aqib Arain
+                        <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-semibold">PRO</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Tax Advisor & Credentials Vault</p>
                 </div>
             </div>
             
-            <div class="flex items-center space-x-2">
-                <button onclick="exportToCSV()" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center space-x-2">
-                    <i class="fa-brands fa-google-drive text-emerald-400"></i>
-                    <span class="hidden sm:inline">Backup / Drive Export</span>
+            <div class="flex items-center space-x-3">
+                <button onclick="exportToCSV()" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 transition flex items-center space-x-2">
+                    <i class="fa-brands fa-google-drive text-emerald-400 text-sm"></i>
+                    <span class="hidden sm:inline">Drive / CSV Backup</span>
                 </button>
-                <button onclick="openClientModal()" class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs shadow-md transition flex items-center space-x-2">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>New Client</span>
+                <button onclick="openClientModal()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/25 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>New Client Record</span>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
 
-        <!-- Combined Financial Dashboard Summary -->
+        <!-- Combined Financial Analytics Bar -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex items-center justify-between">
+            <div class="glass-card p-5 rounded-2xl flex items-center justify-between relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-blue-500/5 rounded-full blur-xl"></div>
                 <div>
-                    <p class="text-xs font-medium text-slate-500">Total Deal Fees</p>
-                    <h3 id="statAgreed" class="text-xl md:text-2xl font-bold text-slate-900 mt-0.5">Rs. 0</h3>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Deal Value</p>
+                    <h3 id="statAgreed" class="text-xl md:text-2xl font-black text-white mt-1">Rs. 0</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center"><i class="fa-solid fa-handshake text-lg"></i></div>
+                <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-lg"><i class="fa-solid fa-handshake"></i></div>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex items-center justify-between">
+
+            <div class="glass-card p-5 rounded-2xl flex items-center justify-between relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl"></div>
                 <div>
-                    <p class="text-xs font-medium text-slate-500">Combined Fee Received</p>
-                    <h3 id="statReceived" class="text-xl md:text-2xl font-bold text-emerald-600 mt-0.5">Rs. 0</h3>
+                    <p class="text-xs font-medium text-emerald-400 uppercase tracking-wider">Combined Received</p>
+                    <h3 id="statReceived" class="text-xl md:text-2xl font-black text-emerald-400 mt-1">Rs. 0</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-money-bill-wave text-lg"></i></div>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg"><i class="fa-solid fa-wallet"></i></div>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex items-center justify-between">
+
+            <div class="glass-card p-5 rounded-2xl flex items-center justify-between relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-rose-500/10 rounded-full blur-xl"></div>
                 <div>
-                    <p class="text-xs font-medium text-slate-500">Combined Remaining Fee</p>
-                    <h3 id="statRemaining" class="text-xl md:text-2xl font-bold text-rose-600 mt-0.5">Rs. 0</h3>
+                    <p class="text-xs font-medium text-rose-400 uppercase tracking-wider">Combined Remaining</p>
+                    <h3 id="statRemaining" class="text-xl md:text-2xl font-black text-rose-400 mt-1">Rs. 0</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-scale-unbalanced-flip text-lg"></i></div>
+                <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg"><i class="fa-solid fa-scale-unbalanced"></i></div>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex items-center justify-between">
+
+            <div class="glass-card p-5 rounded-2xl flex items-center justify-between relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-purple-500/5 rounded-full blur-xl"></div>
                 <div>
-                    <p class="text-xs font-medium text-slate-500">Active Records</p>
-                    <h3 id="statTotalClients" class="text-xl md:text-2xl font-bold text-blue-600 mt-0.5">0</h3>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Active Records</p>
+                    <h3 id="statTotalClients" class="text-xl md:text-2xl font-black text-purple-400 mt-1">0</h3>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-users text-lg"></i></div>
+                <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-lg"><i class="fa-solid fa-users-viewfinder"></i></div>
             </div>
         </div>
 
-        <!-- Portal Filter Tabs (FBR vs GTE) -->
-        <div class="flex border-b border-slate-200 space-x-4 text-sm font-medium">
-            <button onclick="switchPortalTab('ALL')" id="tabALL" class="pb-3 border-b-2 border-emerald-500 text-emerald-600 font-bold flex items-center space-x-2">
-                <i class="fa-solid fa-border-all"></i>
-                <span>All Clients</span>
-                <span id="badgeALL" class="bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded-full">0</span>
-            </button>
-            <button onclick="switchPortalTab('FBR')" id="tabFBR" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
-                <i class="fa-solid fa-building-columns text-emerald-600"></i>
-                <span>FBR Clients</span>
-                <span id="badgeFBR" class="bg-emerald-50 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full">0</span>
-            </button>
-            <button onclick="switchPortalTab('GTE')" id="tabGTE" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
-                <i class="fa-solid fa-briefcase text-purple-600"></i>
-                <span>GTE Clients</span>
-                <span id="badgeGTE" class="bg-purple-50 text-purple-700 text-[10px] px-2 py-0.5 rounded-full">0</span>
-            </button>
-        </div>
-
-        <!-- Search & Filter Controls -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow space-y-3">
-            <div class="flex flex-col md:flex-row gap-3">
-                <div class="relative flex-1">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="searchInput" oninput="filterClients()" placeholder="Search Name, Phone, CNIC, or NTN..." 
-                        class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+        <!-- Segmented Portal Tabs & Search -->
+        <div class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <!-- Portal Segmented Tabs -->
+                <div class="bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 flex space-x-1 text-xs font-medium">
+                    <button onclick="switchPortalTab('ALL')" id="tabALL" class="px-5 py-2.5 rounded-xl transition flex items-center space-x-2 bg-emerald-500 text-slate-950 font-bold shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>All Clients</span>
+                        <span id="badgeALL" class="ml-1 px-2 py-0.5 rounded-full bg-slate-950/30 text-slate-950 text-[10px]">0</span>
+                    </button>
+                    <button onclick="switchPortalTab('FBR')" id="tabFBR" class="px-5 py-2.5 rounded-xl transition flex items-center space-x-2 text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-building-columns text-emerald-400"></i>
+                        <span>FBR Portal</span>
+                        <span id="badgeFBR" class="ml-1 px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px]">0</span>
+                    </button>
+                    <button onclick="switchPortalTab('GTE')" id="tabGTE" class="px-5 py-2.5 rounded-xl transition flex items-center space-x-2 text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-briefcase text-purple-400"></i>
+                        <span>GTE Portal</span>
+                        <span id="badgeGTE" class="ml-1 px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px]">0</span>
+                    </button>
                 </div>
-                <div class="flex gap-2 text-xs">
-                    <select id="paymentFilter" onchange="filterClients()" class="border border-slate-300 rounded-lg px-3 py-2.5 bg-white text-slate-700 focus:outline-none">
-                        <option value="ALL">All Payment Status</option>
-                        <option value="Paid">Paid</option>
+
+                <!-- Filters -->
+                <div class="flex items-center space-x-2 text-xs">
+                    <select id="paymentFilter" onchange="filterClients()" class="glass-input rounded-xl px-3 py-2.5 text-slate-300">
+                        <option value="ALL">All Payments</option>
+                        <option value="Paid">Paid Only</option>
                         <option value="Partial">Partial Pay</option>
-                        <option value="Unpaid">Unpaid</option>
+                        <option value="Unpaid">Unpaid Only</option>
                     </select>
-                    <select id="contactFilter" onchange="filterClients()" class="border border-slate-300 rounded-lg px-3 py-2.5 bg-white text-slate-700 focus:outline-none">
-                        <option value="ALL">All Contact Status</option>
+                    <select id="contactFilter" onchange="filterClients()" class="glass-input rounded-xl px-3 py-2.5 text-slate-300">
+                        <option value="ALL">All Contacts</option>
                         <option value="Contacted">Contacted</option>
                         <option value="Not Contacted">Not Contacted</option>
                     </select>
                 </div>
             </div>
+
+            <!-- Search Bar -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-500 text-sm"></i>
+                <input type="text" id="searchInput" oninput="filterClients()" placeholder="Search Client Name, Phone, CNIC (12345-1234567-1), or NTN..." 
+                    class="w-full pl-11 pr-4 py-3 rounded-2xl glass-input text-sm placeholder-slate-500">
+            </div>
         </div>
 
         <!-- Client Cards Grid -->
-        <div id="clientGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Cards Inserted Dynamically -->
+        <div id="clientGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Dynamic Cards Loaded Here -->
         </div>
 
     </div>
 
-    <!-- Modal Form (Zero Required Fields) -->
-    <div id="clientModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h2 id="modalTitle" class="font-bold text-slate-900 text-lg">Add Client Record</h2>
-                <button onclick="closeClientModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <!-- Modal Drawer (Zero Required Fields) -->
+    <div id="clientModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex justify-center items-center p-4 hidden">
+        <div class="glass-card rounded-3xl max-w-lg w-full p-6 space-y-5 border border-slate-700/60 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                    <h2 id="modalTitle" class="font-bold text-white text-lg">Add Client Record</h2>
+                </div>
+                <button onclick="closeClientModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <form id="clientForm" onsubmit="saveClient(event)" class="space-y-3 text-xs">
+            <form id="clientForm" onsubmit="saveClient(event)" class="space-y-4 text-xs">
                 <input type="hidden" id="clientId">
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block font-medium text-slate-700 mb-1">Portal Category</label>
-                        <select id="portalType" class="w-full p-2.5 rounded-lg border border-slate-300 bg-white font-semibold text-emerald-700 outline-none">
+                        <label class="block font-medium text-slate-300 mb-1.5">Portal Category</label>
+                        <select id="portalType" class="w-full p-3 rounded-xl glass-input font-bold text-emerald-400">
                             <option value="FBR">FBR Portal</option>
                             <option value="GTE">GTE Portal</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block font-medium text-slate-700 mb-1">Full Name</label>
-                        <input type="text" id="fullName" placeholder="Optional" class="w-full p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <label class="block font-medium text-slate-300 mb-1.5">Full Name</label>
+                        <input type="text" id="fullName" placeholder="Optional" class="w-full p-3 rounded-xl glass-input">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block font-medium text-slate-700 mb-1">Phone Number</label>
-                        <input type="text" id="phone" placeholder="Optional" class="w-full p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <label class="block font-medium text-slate-300 mb-1.5">Phone Number</label>
+                        <input type="text" id="phone" placeholder="Optional" class="w-full p-3 rounded-xl glass-input">
                     </div>
                     <div>
-                        <label class="block font-medium text-slate-700 mb-1">Email Address</label>
-                        <input type="email" id="email" placeholder="Optional" class="w-full p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <label class="block font-medium text-slate-300 mb-1.5">Email Address</label>
+                        <input type="email" id="email" placeholder="Optional" class="w-full p-3 rounded-xl glass-input">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block font-medium text-slate-700 mb-1">CNIC Number</label>
-                        <input type="text" id="cnic" placeholder="12345-1234567-1" oninput="formatCNIC(this)" maxlength="15" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <label class="block font-medium text-slate-300 mb-1.5">CNIC Number</label>
+                        <input type="text" id="cnic" placeholder="12345-1234567-1" oninput="formatCNIC(this)" maxlength="15" class="w-full p-3 rounded-xl glass-input font-mono">
                     </div>
                     <div>
-                        <label class="block font-medium text-slate-700 mb-1">NTN Number</label>
-                        <input type="text" id="ntn" placeholder="Optional" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <label class="block font-medium text-slate-300 mb-1.5">NTN Number</label>
+                        <input type="text" id="ntn" placeholder="Optional" class="w-full p-3 rounded-xl glass-input font-mono">
                     </div>
                 </div>
 
                 <!-- Fee Deal Section -->
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                    <h4 class="font-bold text-slate-800 text-xs flex items-center"><i class="fa-solid fa-coins text-amber-500 mr-1.5"></i> Fee & Payment Deal</h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-medium text-slate-700 mb-1">Fee Deal Amount (Rs.)</label>
-                            <input type="number" id="feeAgreed" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block font-medium text-slate-700 mb-1">Fee Received (Rs.)</label>
-                            <input type="number" id="feeReceived" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono text-emerald-700 font-bold focus:ring-2 focus:ring-emerald-500 outline-none">
-                        </div>
+                <div class="p-4 bg-slate-900/90 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-200 text-xs flex items-center gap-1.5"><i class="fa-solid fa-coins text-amber-400"></i> Fee & Deal Tracking</span>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block font-medium text-slate-700 mb-1">Payment Status</label>
-                            <select id="paymentStatus" class="w-full p-2.5 rounded-lg border border-slate-300 bg-white outline-none">
+                            <label class="block font-medium text-slate-400 mb-1">Deal Fee (Rs.)</label>
+                            <input type="number" id="feeAgreed" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2.5 rounded-xl glass-input font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-medium text-slate-400 mb-1">Fee Received (Rs.)</label>
+                            <input type="number" id="feeReceived" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2.5 rounded-xl glass-input font-mono font-bold text-emerald-400">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-1">
+                        <div>
+                            <label class="block font-medium text-slate-400 mb-1">Payment Status</label>
+                            <select id="paymentStatus" class="w-full p-2.5 rounded-xl glass-input">
                                 <option value="Unpaid">Unpaid</option>
                                 <option value="Partial">Partial Pay</option>
                                 <option value="Paid">Paid</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block font-medium text-slate-700 mb-1">Contact Status</label>
-                            <select id="contactStatus" class="w-full p-2.5 rounded-lg border border-slate-300 bg-white outline-none">
+                            <label class="block font-medium text-slate-400 mb-1">Contact Status</label>
+                            <select id="contactStatus" class="w-full p-2.5 rounded-xl glass-input">
                                 <option value="Not Contacted">Not Contacted</option>
                                 <option value="Contacted">Contacted</option>
                             </select>
@@ -215,23 +241,24 @@
                 </div>
 
                 <div>
-                    <label class="block font-medium text-slate-700 mb-1">Tax Portal Password</label>
-                    <input type="text" id="taxPassword" placeholder="Optional Password" class="w-full p-2.5 rounded-lg border border-slate-300 font-mono focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <label class="block font-medium text-slate-300 mb-1.5">Tax Portal Password</label>
+                    <input type="text" id="taxPassword" placeholder="Optional Password" class="w-full p-3 rounded-xl glass-input font-mono">
                 </div>
 
                 <div>
-                    <label class="block font-medium text-slate-700 mb-1">Notes / Filing Details</label>
-                    <textarea id="notes" rows="2" placeholder="Optional Notes..." class="w-full p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                    <label class="block font-medium text-slate-300 mb-1.5">Notes / Filing Details</label>
+                    <textarea id="notes" rows="2" placeholder="Optional Notes..." class="w-full p-3 rounded-xl glass-input"></textarea>
                 </div>
 
-                <div class="pt-3 flex justify-end space-x-2 border-t">
-                    <button type="button" onclick="closeClientModal()" class="px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-100">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow">Save Client Record</button>
+                <div class="pt-4 flex justify-end space-x-2 border-t border-slate-800">
+                    <button type="button" onclick="closeClientModal()" class="px-5 py-2.5 rounded-xl text-slate-400 hover:text-white transition">Cancel</button>
+                    <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition">Save Client</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- JavaScript Engine -->
     <script>
         const SUPABASE_URL = "https://xmrprtdsucbqkyflbgfj.supabase.co";
         const SUPABASE_KEY = "sb_publishable_MfURv5DghN1mAHOHhgpYhA_TtiuEdtT"; 
@@ -304,9 +331,9 @@
             ['ALL', 'FBR', 'GTE'].forEach(t => {
                 const btn = document.getElementById(`tab${t}`);
                 if (t === tab) {
-                    btn.className = "pb-3 border-b-2 border-emerald-500 text-emerald-600 font-bold flex items-center space-x-2";
+                    btn.className = "px-5 py-2.5 rounded-xl transition flex items-center space-x-2 bg-emerald-500 text-slate-950 font-bold shadow-lg shadow-emerald-500/20";
                 } else {
-                    btn.className = "pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2";
+                    btn.className = "px-5 py-2.5 rounded-xl transition flex items-center space-x-2 text-slate-400 hover:text-white";
                 }
             });
             filterClients();
@@ -341,7 +368,7 @@
             grid.innerHTML = '';
 
             if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-xl border border-slate-200"><i class="fa-solid fa-folder-open text-3xl mb-2 block"></i>No ${activeTab} clients found.</div>`;
+                grid.innerHTML = `<div class="col-span-full text-center py-16 text-slate-500 glass-card rounded-3xl"><i class="fa-solid fa-folder-open text-4xl mb-3 block text-slate-600"></i>No ${activeTab} clients found.</div>`;
                 return;
             }
 
@@ -353,59 +380,71 @@
                 const received = parseFloat(c.fee_received || 0);
                 const remaining = agreed - received;
 
-                let payBadgeClass = "bg-rose-100 text-rose-800";
-                if (c.payment_status === 'Paid') payBadgeClass = "bg-emerald-100 text-emerald-800";
-                if (c.payment_status === 'Partial') payBadgeClass = "bg-amber-100 text-amber-800";
+                const percentPaid = agreed > 0 ? Math.min(Math.round((received / agreed) * 100), 100) : (received > 0 ? 100 : 0);
+
+                let payBadgeClass = "bg-rose-500/10 text-rose-400 border-rose-500/20";
+                let dotColor = "bg-rose-400";
+                if (c.payment_status === 'Paid') { payBadgeClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"; dotColor = "bg-emerald-400"; }
+                if (c.payment_status === 'Partial') { payBadgeClass = "bg-amber-500/10 text-amber-400 border-amber-500/20"; dotColor = "bg-amber-400"; }
 
                 const card = document.createElement('div');
-                card.className = "bg-white p-5 rounded-xl border border-slate-200 card-shadow card-shadow-hover transition space-y-3";
+                card.className = "glass-card glass-card-hover p-5 rounded-3xl space-y-4 relative group";
                 card.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="flex items-center space-x-2">
-                                <span class="px-2 py-0.5 text-[10px] font-bold rounded ${portal === 'FBR' ? 'bg-emerald-600 text-white' : 'bg-purple-600 text-white'}">${portal}</span>
-                                <h3 class="font-bold text-slate-900 text-base">${displayName}</h3>
+                                <span class="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md ${portal === 'FBR' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'}">${portal}</span>
+                                <h3 class="font-bold text-white text-base group-hover:text-emerald-400 transition">${displayName}</h3>
                             </div>
-                            <div class="text-xs text-slate-500 space-y-0.5 mt-1">
-                                <div><i class="fa-solid fa-phone text-slate-400 w-4"></i> ${c.phone || '-'}</div>
-                                <div><i class="fa-solid fa-envelope text-slate-400 w-4"></i> ${c.email || '-'}</div>
+                            <div class="text-xs text-slate-400 space-y-0.5 mt-2">
+                                <div><i class="fa-solid fa-phone text-slate-500 w-4"></i> ${c.phone || '-'}</div>
+                                <div><i class="fa-solid fa-envelope text-slate-500 w-4"></i> ${c.email || '-'}</div>
                             </div>
                         </div>
                         <div class="flex flex-col gap-1 text-[10px] items-end">
-                            <span class="px-2.5 py-0.5 rounded-full font-semibold ${payBadgeClass}">${c.payment_status || 'Unpaid'}</span>
-                            <span class="px-2.5 py-0.5 rounded-full font-semibold ${c.contact_status === 'Contacted' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}">${c.contact_status || 'Not Contacted'}</span>
+                            <span class="px-2.5 py-1 rounded-full font-semibold border flex items-center gap-1.5 ${payBadgeClass}">
+                                <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span> ${c.payment_status || 'Unpaid'}
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full font-medium ${c.contact_status === 'Contacted' ? 'bg-blue-500/10 text-blue-400' : 'bg-slate-800 text-slate-400'}">${c.contact_status || 'Not Contacted'}</span>
                         </div>
                     </div>
 
-                    <!-- Fee Summary Box -->
-                    <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg text-[11px] border border-slate-200">
-                        <div><span class="text-slate-500 block">Deal Fee:</span><strong class="text-slate-800">Rs. ${agreed.toLocaleString()}</strong></div>
-                        <div><span class="text-slate-500 block">Received:</span><strong class="text-emerald-700">Rs. ${received.toLocaleString()}</strong></div>
-                        <div><span class="text-slate-500 block">Remaining:</span><strong class="text-rose-600">Rs. ${remaining.toLocaleString()}</strong></div>
+                    <!-- Financial Progress Box -->
+                    <div class="bg-slate-900/80 p-3.5 rounded-2xl space-y-2 border border-slate-800/80">
+                        <div class="flex justify-between text-[11px]">
+                            <span class="text-slate-400">Deal: <strong class="text-white">Rs. ${agreed.toLocaleString()}</strong></span>
+                            <span class="text-emerald-400 font-bold">Received: Rs. ${received.toLocaleString()}</span>
+                            <span class="text-rose-400 font-semibold">Rem: Rs. ${remaining.toLocaleString()}</span>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full" style="width: ${percentPaid}%"></div>
+                        </div>
                     </div>
 
-                    <div class="bg-slate-50 p-3 rounded-lg space-y-1.5 text-xs font-mono border border-slate-100">
-                        <div class="flex justify-between"><span class="text-slate-500 font-sans">CNIC:</span><strong>${c.cnic || '-'}</strong></div>
-                        <div class="flex justify-between"><span class="text-slate-500 font-sans">NTN:</span><strong>${c.ntn || '-'}</strong></div>
-                        <div class="flex justify-between items-center pt-1 border-t border-slate-200">
-                            <span class="text-slate-500 font-sans">Portal Password:</span>
+                    <!-- Credential Vault Box -->
+                    <div class="bg-slate-950/60 p-3 rounded-2xl space-y-2 text-xs font-mono border border-slate-800/60">
+                        <div class="flex justify-between"><span class="text-slate-500 font-sans">CNIC:</span><strong class="text-slate-200">${c.cnic || '-'}</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500 font-sans">NTN:</span><strong class="text-slate-200">${c.ntn || '-'}</strong></div>
+                        <div class="flex justify-between items-center pt-1 border-t border-slate-800/80">
+                            <span class="text-slate-500 font-sans">Portal Pass:</span>
                             <div class="flex items-center space-x-2">
-                                <span id="pass-${c.id}" class="text-slate-900 font-bold">${decPass ? '••••••••' : '-'}</span>
+                                <span id="pass-${c.id}" class="text-emerald-400 font-bold tracking-wider">${decPass ? '••••••••' : '-'}</span>
                                 ${decPass ? `
-                                    <button onclick="togglePassword('${c.id}', '${decPass}')" class="text-slate-400 hover:text-slate-700"><i id="eye-${c.id}" class="fa-solid fa-eye"></i></button>
-                                    <button onclick="copyPassword('${decPass}')" class="text-emerald-600 hover:text-emerald-800"><i class="fa-regular fa-copy"></i></button>
+                                    <button onclick="togglePassword('${c.id}', '${decPass}')" class="text-slate-400 hover:text-white transition"><i id="eye-${c.id}" class="fa-solid fa-eye"></i></button>
+                                    <button onclick="copyPassword('${decPass}')" class="text-emerald-400 hover:text-emerald-300 transition"><i class="fa-regular fa-copy"></i></button>
                                 ` : ''}
                             </div>
                         </div>
                     </div>
 
-                    ${c.notes ? `<div class="text-xs text-slate-600 bg-amber-50/60 p-2 rounded-lg border border-amber-100"><i class="fa-solid fa-sticky-note text-amber-500 mr-1"></i>${c.notes}</div>` : ''}
+                    ${c.notes ? `<div class="text-xs text-slate-300 bg-amber-500/5 p-2.5 rounded-xl border border-amber-500/10"><i class="fa-solid fa-pen-nib text-amber-400 mr-1.5"></i>${c.notes}</div>` : ''}
 
-                    <div class="flex justify-between items-center pt-2 border-t text-xs">
-                        <span class="text-slate-400 text-[10px]">ID: ${c.id.substring(0,8)}</span>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-800/60 text-xs">
+                        <span class="text-slate-500 text-[10px]">ID: ${c.id.substring(0,8)}</span>
                         <div class="space-x-3">
-                            <button onclick="editClient('${c.id}')" class="text-blue-600 hover:underline"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button onclick="deleteClient('${c.id}')" class="text-rose-600 hover:underline"><i class="fa-solid fa-trash"></i> Delete</button>
+                            <button onclick="editClient('${c.id}')" class="text-blue-400 hover:text-blue-300 transition"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                            <button onclick="deleteClient('${c.id}')" class="text-rose-400 hover:text-rose-300 transition"><i class="fa-solid fa-trash"></i> Delete</button>
                         </div>
                     </div>
                 `;
@@ -427,7 +466,7 @@
 
         function copyPassword(pass) {
             navigator.clipboard.writeText(pass);
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Password copied!', showConfirmButton: false, timer: 1500 });
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Password Copied!', showConfirmButton: false, timer: 1500, background: '#1e293b', color: '#fff' });
         }
 
         async function saveClient(e) {
@@ -455,9 +494,9 @@
             else res = await db.from('clients').insert([payload]);
 
             if (res.error) {
-                Swal.fire({ icon: 'error', title: 'Save Failed', text: res.error.message });
+                Swal.fire({ icon: 'error', title: 'Save Failed', text: res.error.message, background: '#1e293b', color: '#fff' });
             } else {
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved Successfully!', showConfirmButton: false, timer: 1500 });
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved Successfully!', showConfirmButton: false, timer: 1500, background: '#1e293b', color: '#fff' });
                 closeClientModal();
                 fetchClients();
             }
@@ -486,11 +525,14 @@
         async function deleteClient(id) {
             const result = await Swal.fire({
                 title: 'Delete Client Record?',
-                text: "This action cannot be undone!",
+                text: "This record will be permanently deleted!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#e11d48',
-                confirmButtonText: 'Delete'
+                confirmButtonColor: '#f43f5e',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, Delete',
+                background: '#1e293b',
+                color: '#fff'
             });
 
             if (result.isConfirmed) {
@@ -520,7 +562,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.setAttribute('href', url);
-            a.setAttribute('download', `Aqib_Arain_Tax_Clients_Backup_${new Date().toISOString().slice(0,10)}.csv`);
+            a.setAttribute('download', `Aqib_Arain_Tax_Backup_${new Date().toISOString().slice(0,10)}.csv`);
             a.click();
         }
 
