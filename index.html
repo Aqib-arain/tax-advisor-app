@@ -14,14 +14,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Google Identity Services (Google Drive Sync) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
         .executive-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03); }
-        .executive-card-hover:hover { border-color: #cbd5e1; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08); transform: translateY(-2px); transition: all 0.2s ease-in-out; }
         .executive-input { background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; }
         .executive-input:focus { border-color: #059669; outline: none; box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12); }
+        tr:hover { background-color: #f1f5f9; }
     </style>
 </head>
 <body class="min-h-screen pb-16">
@@ -64,9 +66,13 @@
                 <button onclick="lockApp()" title="Lock App Screen" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
                     <i class="fa-solid fa-lock text-slate-600"></i>
                 </button>
-                <button onclick="exportToCSV()" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition flex items-center space-x-1.5">
+                <button onclick="saveToGoogleDrive()" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition flex items-center space-x-1.5" title="Auto Save to Google Drive">
                     <i class="fa-brands fa-google-drive text-emerald-600 text-sm"></i>
-                    <span class="hidden sm:inline">Drive Backup</span>
+                    <span class="hidden sm:inline">Drive Save</span>
+                </button>
+                <button onclick="exportToCSV()" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition flex items-center space-x-1.5" title="Download Excel CSV">
+                    <i class="fa-solid fa-file-csv text-blue-600 text-sm"></i>
+                    <span class="hidden sm:inline">CSV Download</span>
                 </button>
                 <button onclick="openClientModal()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center space-x-2">
                     <i class="fa-solid fa-plus text-sm"></i>
@@ -140,9 +146,11 @@
                 <div class="flex flex-wrap gap-2 text-xs">
                     <select id="yearFilter" onchange="filterClients()" class="executive-input rounded-xl px-3 py-2 bg-white text-slate-700 font-bold">
                         <option value="ALL">All Tax Years</option>
-                        <option value="2025">TY 2027</option>
-                        <option value="2024">TY 2026</option>
-                        <option value="2023">TY 2025</option>
+                        <option value="2027">TY 2027</option>
+                        <option value="2026">TY 2026</option>
+                        <option value="2025">TY 2025</option>
+                        <option value="2024">TY 2024</option>
+                        <option value="2023">TY 2023</option>
                     </select>
                     <select id="atlFilter" onchange="filterClients()" class="executive-input rounded-xl px-3 py-2 bg-white text-slate-700 font-bold">
                         <option value="ALL">All ATL Status</option>
@@ -155,7 +163,6 @@
                         <option value="Partial">Partial Pay</option>
                         <option value="Unpaid">Unpaid Only</option>
                     </select>
-                    <!-- Fixed Missing Contact Filter -->
                     <select id="contactFilter" onchange="filterClients()" class="executive-input rounded-xl px-3 py-2 bg-white text-slate-700">
                         <option value="ALL">All Contacts</option>
                         <option value="Contacted">Contacted</option>
@@ -167,14 +174,30 @@
             <!-- Search Input -->
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 text-sm"></i>
-                <input type="text" id="searchInput" oninput="filterClients()" placeholder="Search Name, Phone, CNIC (12345-1234567-1), or NTN..." 
+                <input type="text" id="searchInput" oninput="filterClients()" placeholder="Search Name, Phone, CNIC, NTN, or Reference Name/CNIC..." 
                     class="w-full pl-11 pr-4 py-3 rounded-2xl executive-input text-sm placeholder-slate-400 shadow-sm">
             </div>
         </div>
 
-        <!-- Client Cards Grid -->
-        <div id="clientGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- Dynamic Cards Loaded Here -->
+        <!-- LIST VIEW DATA TABLE -->
+        <div class="executive-card rounded-3xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-100/80 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                        <tr>
+                            <th class="py-3.5 px-4">Portal / Year</th>
+                            <th class="py-3.5 px-4">Client Contact & Reference</th>
+                            <th class="py-3.5 px-4">CNIC & NTN</th>
+                            <th class="py-3.5 px-4">Financial Status</th>
+                            <th class="py-3.5 px-4">Portal Password</th>
+                            <th class="py-3.5 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientTableBody" class="divide-y divide-slate-200/70">
+                        <!-- Dynamic List Rows Loaded Here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </div>
@@ -201,8 +224,10 @@
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">Tax Year</label>
                         <select id="taxYear" class="w-full p-2.5 rounded-xl executive-input font-bold text-blue-700 bg-white">
+                            <option value="2027">TY 2027</option>
+                            <option value="2026" selected>TY 2026</option>
                             <option value="2025">TY 2025</option>
-                            <option value="2024" selected>TY 2024</option>
+                            <option value="2024">TY 2024</option>
                             <option value="2023">TY 2023</option>
                         </select>
                     </div>
@@ -211,7 +236,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">Full Name</label>
-                        <input type="text" id="fullName" placeholder="Optional" class="w-full p-2.5 rounded-xl executive-input">
+                        <input type="text" id="fullName" placeholder="Client Name" class="w-full p-2.5 rounded-xl executive-input">
                     </div>
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">ATL Filer Status</label>
@@ -225,11 +250,11 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">Phone Number</label>
-                        <input type="text" id="phone" placeholder="Optional" class="w-full p-2.5 rounded-xl executive-input">
+                        <input type="text" id="phone" placeholder="03001234567" class="w-full p-2.5 rounded-xl executive-input">
                     </div>
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">Email Address</label>
-                        <input type="email" id="email" placeholder="Optional" class="w-full p-2.5 rounded-xl executive-input">
+                        <input type="email" id="email" placeholder="Optional Email" class="w-full p-2.5 rounded-xl executive-input">
                     </div>
                 </div>
 
@@ -240,8 +265,14 @@
                     </div>
                     <div>
                         <label class="block font-medium text-slate-700 mb-1">NTN Number</label>
-                        <input type="text" id="ntn" placeholder="Optional" class="w-full p-2.5 rounded-xl executive-input font-mono">
+                        <input type="text" id="ntn" placeholder="Optional NTN" class="w-full p-2.5 rounded-xl executive-input font-mono">
                     </div>
+                </div>
+
+                <!-- Reference / Referred By Field -->
+                <div>
+                    <label class="block font-medium text-slate-700 mb-1"><i class="fa-solid fa-user-tag text-indigo-500 mr-1"></i> Referred By (Reference)</label>
+                    <input type="text" id="referredBy" placeholder="Name or CNIC of person who referred this taxpayer" class="w-full p-2.5 rounded-xl executive-input">
                 </div>
 
                 <!-- Fee Deal Section -->
@@ -335,7 +366,7 @@
             }
         }
 
-        // WhatsApp 1-Click Messaging Engine
+        // WhatsApp Messaging Engine
         function openWhatsApp(phone, name, agreed, received, cnic, pass) {
             if (!phone) {
                 Swal.fire({ icon: 'warning', title: 'No Phone Number', text: 'This client has no phone number saved.' });
@@ -468,25 +499,27 @@
                 const phone = c.phone || '';
                 const cnic = c.cnic || '';
                 const ntn = (c.ntn || '').toLowerCase();
+                const ref = (c.referred_by || '').toLowerCase();
 
-                const matchSearch = name.includes(query) || phone.includes(query) || cnic.includes(query) || ntn.includes(query);
+                const matchSearch = name.includes(query) || phone.includes(query) || cnic.includes(query) || ntn.includes(query) || ref.includes(query);
                 const matchPay = payF === 'ALL' || c.payment_status === payF;
                 const matchCon = conF === 'ALL' || c.contact_status === conF;
-                const matchYear = yearF === 'ALL' || (c.tax_year || '2024') === yearF;
+                const matchYear = yearF === 'ALL' || (c.tax_year || '2026') === yearF;
                 const matchATL = atlF === 'ALL' || (c.atl_status || 'Active') === atlF;
 
                 return matchTab && matchSearch && matchPay && matchCon && matchYear && matchATL;
             });
 
-            renderClients(filtered);
+            renderClientsList(filtered);
         }
 
-        function renderClients(list) {
-            const grid = document.getElementById('clientGrid');
-            grid.innerHTML = '';
+        // RENDER LIST TABLE VIEW
+        function renderClientsList(list) {
+            const tbody = document.getElementById('clientTableBody');
+            tbody.innerHTML = '';
 
             if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-16 text-slate-400 executive-card rounded-3xl"><i class="fa-solid fa-folder-open text-4xl mb-3 block text-slate-300"></i>No ${activeTab} clients found matching filters.</div>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400 font-medium"><i class="fa-solid fa-folder-open text-3xl mb-2 block text-slate-300"></i>No ${activeTab} clients found.</td></tr>`;
                 return;
             }
 
@@ -494,85 +527,71 @@
                 const decPass = decryptText(c.tax_portal_password_encrypted);
                 const displayName = c.full_name || 'Unnamed Client';
                 const portal = c.portal_type || 'FBR';
-                const year = c.tax_year || '2024';
+                const year = c.tax_year || '2026';
                 const atl = c.atl_status || 'Active';
                 const agreed = parseFloat(c.fee_agreed || 0);
                 const received = parseFloat(c.fee_received || 0);
                 const remaining = agreed - received;
 
-                const percentPaid = agreed > 0 ? Math.min(Math.round((received / agreed) * 100), 100) : (received > 0 ? 100 : 0);
-
                 let payBadgeClass = "bg-rose-50 text-rose-700 border-rose-200";
-                let dotColor = "bg-rose-500";
-                if (c.payment_status === 'Paid') { payBadgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200"; dotColor = "bg-emerald-500"; }
-                if (c.payment_status === 'Partial') { payBadgeClass = "bg-amber-50 text-amber-700 border-amber-200"; dotColor = "bg-amber-500"; }
+                if (c.payment_status === 'Paid') { payBadgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200"; }
+                if (c.payment_status === 'Partial') { payBadgeClass = "bg-amber-50 text-amber-700 border-amber-200"; }
 
-                const card = document.createElement('div');
-                card.className = "executive-card executive-card-hover p-5 rounded-3xl space-y-4 relative group";
-                card.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
-                                <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-md ${portal === 'FBR' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-indigo-100 text-indigo-800 border border-indigo-200'}">${portal}</span>
-                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-50 text-blue-700 border border-blue-200">TY ${year}</span>
-                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-md ${atl === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">${atl === 'Active' ? '🟢 ATL' : '🔴 Inactive'}</span>
-                            </div>
-                            <h3 class="font-bold text-slate-900 text-base mt-1 group-hover:text-emerald-700 transition">${displayName}</h3>
-                            <div class="text-xs text-slate-500 space-y-0.5 mt-1">
-                                <div class="flex items-center space-x-2">
-                                    <span><i class="fa-solid fa-phone text-slate-400 w-3.5"></i> ${c.phone || '-'}</span>
-                                    ${c.phone ? `<button onclick="openWhatsApp('${c.phone}', '${displayName}', '${agreed}', '${received}', '${c.cnic || ''}', '${decPass}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-sm" title="WhatsApp 1-Click Direct Chat"><i class="fa-brands fa-whatsapp"></i></button>` : ''}
-                                </div>
-                                <div><i class="fa-solid fa-envelope text-slate-400 w-3.5"></i> ${c.email || '-'}</div>
-                            </div>
+                const tr = document.createElement('tr');
+                tr.className = "transition";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 align-top">
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-2 py-0.5 text-[10px] font-black rounded ${portal === 'FBR' ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-indigo-800'}">${portal}</span>
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-50 text-blue-700">TY ${year}</span>
                         </div>
-                        <div class="flex flex-col gap-1 text-[10px] items-end">
-                            <span class="px-2.5 py-1 rounded-full font-semibold border flex items-center gap-1.5 ${payBadgeClass}">
-                                <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span> ${c.payment_status || 'Unpaid'}
-                            </span>
-                            <span class="px-2.5 py-0.5 rounded-full font-medium ${c.contact_status === 'Contacted' ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'}">${c.contact_status || 'Not Contacted'}</span>
+                        <div class="mt-1 text-[11px] font-semibold ${atl === 'Active' ? 'text-emerald-700' : 'text-rose-600'}">
+                            ${atl === 'Active' ? '🟢 ATL Active' : '🔴 Inactive'}
                         </div>
-                    </div>
+                    </td>
 
-                    <!-- Financial Progress Box -->
-                    <div class="bg-slate-50 p-3.5 rounded-2xl space-y-2 border border-slate-100">
-                        <div class="flex justify-between text-[11px]">
-                            <span class="text-slate-500">Deal: <strong class="text-slate-900">Rs. ${agreed.toLocaleString()}</strong></span>
+                    <td class="py-3.5 px-4 align-top">
+                        <div class="font-extrabold text-slate-900 text-sm">${displayName}</div>
+                        <div class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                            <span><i class="fa-solid fa-phone text-slate-400"></i> ${c.phone || '-'}</span>
+                            ${c.phone ? `<button onclick="openWhatsApp('${c.phone}', '${displayName}', '${agreed}', '${received}', '${c.cnic || ''}', '${decPass}')" class="text-emerald-600 hover:text-emerald-800 text-sm" title="Direct WhatsApp"><i class="fa-brands fa-whatsapp font-bold"></i></button>` : ''}
+                        </div>
+                        ${c.referred_by ? `<div class="mt-1 text-[11px] text-indigo-600 font-medium"><i class="fa-solid fa-user-tag text-[10px] mr-1"></i>Ref: ${c.referred_by}</div>` : ''}
+                    </td>
+
+                    <td class="py-3.5 px-4 align-top font-mono text-xs">
+                        <div class="text-slate-800 font-bold"><span class="text-slate-400 font-sans text-[10px]">CNIC:</span> ${c.cnic || '-'}</div>
+                        <div class="text-slate-600"><span class="text-slate-400 font-sans text-[10px]">NTN:</span> ${c.ntn || '-'}</div>
+                    </td>
+
+                    <td class="py-3.5 px-4 align-top text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 text-[10px] font-bold border rounded-full ${payBadgeClass}">${c.payment_status || 'Unpaid'}</span>
+                            <span class="text-[10px] text-slate-400">${c.contact_status || 'Not Contacted'}</span>
+                        </div>
+                        <div class="mt-1 text-[11px]">
+                            <span class="text-slate-500">Agreed: <strong>Rs. ${agreed.toLocaleString()}</strong></span> | 
                             <span class="text-emerald-700 font-bold">Rec: Rs. ${received.toLocaleString()}</span>
-                            <span class="text-rose-600 font-semibold">Rem: Rs. ${remaining.toLocaleString()}</span>
+                            ${remaining > 0 ? `<span class="text-rose-600 font-bold ml-1">(Rem: ${remaining.toLocaleString()})</span>` : ''}
                         </div>
-                        <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: ${percentPaid}%"></div>
-                        </div>
-                    </div>
+                    </td>
 
-                    <!-- Credential Vault Box -->
-                    <div class="bg-slate-50 p-3 rounded-2xl space-y-1.5 text-xs font-mono border border-slate-100">
-                        <div class="flex justify-between"><span class="text-slate-500 font-sans">CNIC:</span><strong class="text-slate-800">${c.cnic || '-'}</strong></div>
-                        <div class="flex justify-between"><span class="text-slate-500 font-sans">NTN:</span><strong class="text-slate-800">${c.ntn || '-'}</strong></div>
-                        <div class="flex justify-between items-center pt-1 border-t border-slate-200">
-                            <span class="text-slate-500 font-sans">Portal Pass:</span>
-                            <div class="flex items-center space-x-2">
-                                <span id="pass-${c.id}" class="text-slate-900 font-bold tracking-wider">${decPass ? '••••••••' : '-'}</span>
-                                ${decPass ? `
-                                    <button onclick="togglePassword('${c.id}', '${decPass}')" class="text-slate-400 hover:text-slate-700 transition"><i id="eye-${c.id}" class="fa-solid fa-eye"></i></button>
-                                    <button onclick="copyPassword('${decPass}')" class="text-emerald-600 hover:text-emerald-800 transition"><i class="fa-regular fa-copy"></i></button>
-                                ` : ''}
-                            </div>
+                    <td class="py-3.5 px-4 align-top font-mono text-xs">
+                        <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-xl w-fit">
+                            <span id="pass-${c.id}" class="text-slate-900 font-bold tracking-wider">${decPass ? '••••••••' : '-'}</span>
+                            ${decPass ? `
+                                <button onclick="togglePassword('${c.id}', '${decPass}')" class="text-slate-400 hover:text-slate-700"><i id="eye-${c.id}" class="fa-solid fa-eye text-xs"></i></button>
+                                <button onclick="copyPassword('${decPass}')" class="text-emerald-600 hover:text-emerald-800"><i class="fa-regular fa-copy text-xs"></i></button>
+                            ` : ''}
                         </div>
-                    </div>
+                    </td>
 
-                    ${c.notes ? `<div class="text-xs text-slate-600 bg-amber-50/80 p-2.5 rounded-xl border border-amber-100"><i class="fa-solid fa-sticky-note text-amber-500 mr-1.5"></i>${c.notes}</div>` : ''}
-
-                    <div class="flex justify-between items-center pt-2 border-t border-slate-100 text-xs">
-                        <span class="text-slate-400 text-[10px]">ID: ${c.id ? c.id.substring(0,8) : 'local'}</span>
-                        <div class="space-x-3">
-                            <button onclick="editClient('${c.id}')" class="text-blue-600 hover:underline"><i class="fa-solid fa-pen"></i> Edit</button>
-                            <button onclick="deleteClient('${c.id}')" class="text-rose-600 hover:underline"><i class="fa-solid fa-trash"></i> Delete</button>
-                        </div>
-                    </div>
+                    <td class="py-3.5 px-4 align-top text-right space-x-2 text-xs">
+                        <button onclick="editClient('${c.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-blue-700 font-bold rounded-lg transition"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="deleteClient('${c.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 `;
-                grid.appendChild(card);
+                tbody.appendChild(tr);
             });
         }
 
@@ -581,10 +600,10 @@
             const icon = document.getElementById(`eye-${id}`);
             if (el.innerText === '••••••••') {
                 el.innerText = rawPassword;
-                icon.className = 'fa-solid fa-eye-slash';
+                icon.className = 'fa-solid fa-eye-slash text-xs';
             } else {
                 el.innerText = '••••••••';
-                icon.className = 'fa-solid fa-eye';
+                icon.className = 'fa-solid fa-eye text-xs';
             }
         }
 
@@ -607,6 +626,7 @@
                 email: document.getElementById('email').value || '',
                 cnic: document.getElementById('cnic').value || '',
                 ntn: document.getElementById('ntn').value || '',
+                referred_by: document.getElementById('referredBy').value || '',
                 fee_agreed: parseFloat(document.getElementById('feeAgreed').value) || 0,
                 fee_received: parseFloat(document.getElementById('feeReceived').value) || 0,
                 tax_portal_password_encrypted: passVal ? encryptText(passVal) : '',
@@ -641,13 +661,14 @@
             if (!c) return;
             document.getElementById('clientId').value = c.id;
             document.getElementById('portalType').value = c.portal_type || 'FBR';
-            document.getElementById('taxYear').value = c.tax_year || '2024';
+            document.getElementById('taxYear').value = c.tax_year || '2026';
             document.getElementById('atlStatus').value = c.atl_status || 'Active';
             document.getElementById('fullName').value = c.full_name || '';
             document.getElementById('phone').value = c.phone || '';
             document.getElementById('email').value = c.email || '';
             document.getElementById('cnic').value = c.cnic || '';
             document.getElementById('ntn').value = c.ntn || '';
+            document.getElementById('referredBy').value = c.referred_by || '';
             document.getElementById('feeAgreed').value = c.fee_agreed || 0;
             document.getElementById('feeReceived').value = c.fee_received || 0;
             document.getElementById('taxPassword').value = decryptText(c.tax_portal_password_encrypted);
@@ -684,25 +705,80 @@
             document.getElementById('clientForm').reset();
             document.getElementById('clientId').value = '';
             document.getElementById('portalType').value = activeTab === 'GTE' ? 'GTE' : 'FBR';
+            document.getElementById('taxYear').value = '2026';
             document.getElementById('modalTitle').innerText = "Add Client Record";
             document.getElementById('clientModal').classList.remove('hidden');
         }
         function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
 
-        function exportToCSV() {
-            let csv = "Portal,Tax Year,ATL Status,Full Name,Phone,Email,CNIC,NTN,Fee Agreed,Fee Received,Remaining Fee,Tax Password,Payment Status,Contact Status,Notes\n";
+        function generateCSVContent() {
+            let csv = "Portal,Tax Year,ATL Status,Full Name,Phone,Email,CNIC,NTN,Referred By,Fee Agreed,Fee Received,Remaining Fee,Tax Password,Payment Status,Contact Status,Notes\n";
             clientsData.forEach(c => {
                 const agreed = parseFloat(c.fee_agreed || 0);
                 const received = parseFloat(c.fee_received || 0);
                 const remaining = agreed - received;
-                csv += `"${c.portal_type || 'FBR'}","${c.tax_year || '2024'}","${c.atl_status || 'Active'}","${c.full_name || ''}","${c.phone || ''}","${c.email || ''}","${c.cnic || ''}","${c.ntn || ''}","${agreed}","${received}","${remaining}","${decryptText(c.tax_portal_password_encrypted)}","${c.payment_status || ''}","${c.contact_status || ''}","${c.notes || ''}"\n`;
+                csv += `"${c.portal_type || 'FBR'}","${c.tax_year || '2026'}","${c.atl_status || 'Active'}","${c.full_name || ''}","${c.phone || ''}","${c.email || ''}","${c.cnic || ''}","${c.ntn || ''}","${c.referred_by || ''}","${agreed}","${received}","${remaining}","${decryptText(c.tax_portal_password_encrypted)}","${c.payment_status || ''}","${c.contact_status || ''}","${c.notes || ''}"\n`;
             });
+            return csv;
+        }
+
+        function exportToCSV() {
+            const csv = generateCSVContent();
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.setAttribute('href', url);
             a.setAttribute('download', `Aqib_Arain_Tax_Vault_Backup_${new Date().toISOString().slice(0,10)}.csv`);
             a.click();
+        }
+
+        // GOOGLE DRIVE AUTO SAVE ENGINE
+        function saveToGoogleDrive() {
+            if (typeof google === 'undefined' || !google.accounts) {
+                Swal.fire({ icon: 'info', title: 'Google Identity Loading', text: 'Initializing Google OAuth, please try again in 2 seconds.' });
+                return;
+            }
+
+            const tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: '1073836109914-placeholder.apps.googleusercontent.com',
+                scope: 'https://www.googleapis.com/auth/drive.file',
+                callback: async (response) => {
+                    if (response.error !== undefined) {
+                        console.error(response);
+                        exportToCSV();
+                        return;
+                    }
+                    
+                    const csvData = generateCSVContent();
+                    const metadata = {
+                        name: `Aqib_Arain_Tax_Vault_Backup_${new Date().toISOString().slice(0,10)}.csv`,
+                        mimeType: 'text/csv',
+                    };
+
+                    const file = new Blob([csvData], { type: 'text/csv' });
+                    const form = new FormData();
+                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                    form.append('file', file);
+
+                    try {
+                        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                            method: 'POST',
+                            headers: new Headers({ 'Authorization': 'Bearer ' + response.access_token }),
+                            body: form
+                        });
+                        const data = await res.json();
+                        if (data.id) {
+                            Swal.fire({ icon: 'success', title: 'Saved to Google Drive!', text: `File "${data.name}" created directly in your Drive!` });
+                        } else {
+                            exportToCSV();
+                        }
+                    } catch(e) {
+                        exportToCSV();
+                    }
+                },
+            });
+
+            tokenClient.requestAccessToken({ prompt: 'consent' });
         }
 
         // Initialize App
