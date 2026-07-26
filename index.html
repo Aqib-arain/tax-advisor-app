@@ -73,12 +73,16 @@
             
             <!-- Mobile Touch Action Buttons -->
             <div class="flex items-center space-x-1 sm:space-x-2">
-                <button onclick="clearAllClientsData()" title="Wipe All Data" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200 transition">
-                    <i class="fa-solid fa-trash-can text-rose-600 text-sm"></i>
+                <button onclick="syncWithSupabase(true)" title="Cloud Refresh / Sync Mobile" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition flex items-center space-x-1">
+                    <i class="fa-solid fa-rotate text-emerald-600 text-sm"></i>
+                    <span class="hidden md:inline">Sync</span>
                 </button>
                 <button onclick="triggerCSVImport()" title="Import CSV File" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold border border-purple-200 transition flex items-center space-x-1">
                     <i class="fa-solid fa-file-import text-purple-600 text-sm"></i>
                     <span class="hidden md:inline">Import</span>
+                </button>
+                <button onclick="clearAllClientsData()" title="Wipe All Data" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200 transition">
+                    <i class="fa-solid fa-trash-can text-rose-600 text-sm"></i>
                 </button>
                 <button onclick="changePIN()" title="Change Security PIN" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
                     <i class="fa-solid fa-key text-amber-600"></i>
@@ -379,6 +383,40 @@
             } catch(e) { return cipher; }
         }
 
+        // 🔄 CLOUD REFRESH / DEVICE SYNC ENGINE
+        async function syncWithSupabase(showModal = false) {
+            if (showModal) {
+                Swal.fire({
+                    title: 'Syncing Devices...',
+                    text: 'Checking cloud database for new records...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+            }
+
+            if (!navigator.onLine) {
+                if (showModal) Swal.fire({ icon: 'warning', title: 'Offline Mode', text: 'Please connect to internet to sync.' });
+                return;
+            }
+
+            try {
+                const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
+                if (!error && data && data.length > 0) {
+                    clientsData = data;
+                    localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+                    updateCombinedFinancials();
+                    filterClients();
+                    if (showModal) {
+                        Swal.fire({ icon: 'success', title: 'Sync Complete!', text: `Loaded ${data.length} records across your devices!`, timer: 1500, showConfirmButton: false });
+                    }
+                } else if (showModal) {
+                    Swal.fire({ icon: 'info', title: 'Synced', text: 'Already displaying latest saved records.' });
+                }
+            } catch(e) {
+                if (showModal) Swal.fire({ icon: 'info', title: 'Sync Active', text: 'Showing latest saved local records.' });
+            }
+        }
+
         // 🗑️ CLEAR ALL VAULT DATA FUNCTION
         async function clearAllClientsData() {
             const confirm1 = await Swal.fire({
@@ -452,18 +490,15 @@
                         let password = '';
                         let clientTitle = '';
 
-                        // Google Passwords Format: name, url, username, password
                         if (cols.length >= 4) {
                             clientTitle = cols[0];
                             userName = cols[2] || cols[0];
                             password = cols[3];
                         } else {
-                            // Simple 2-column format: username, password
                             userName = cols[0];
                             password = cols[1];
                         }
 
-                        // Skip headers
                         if (index === 0 && (
                             userName.toLowerCase().includes('user') || 
                             password.toLowerCase().includes('pass') || 
@@ -727,6 +762,9 @@
 
             updateCombinedFinancials();
             filterClients();
+            
+            // Auto Sync background check
+            syncWithSupabase();
         }
 
         function updateCombinedFinancials() {
@@ -959,6 +997,7 @@
             const el = document.getElementById(`mpass-${id}`);
             const icon = document.getElementById(`meye-${id}`);
             if (el.innerText === '••••••••') {
+                el.innerText = '••••••••';
                 el.innerText = rawPassword;
                 icon.className = 'fa-solid fa-eye-slash text-xs';
             } else {
