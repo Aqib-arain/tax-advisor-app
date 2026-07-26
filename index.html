@@ -3,873 +3,354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aqib Arain - Tax & Credential Vault</title>
-    <!-- Tailwind CSS -->
+    <title>Aqib Arain - Tax Vault</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- CryptoJS (AES-256) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Google Identity Services (Google Drive Sync) -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; -webkit-tap-highlight-color: transparent; }
-        .executive-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03); }
-        .executive-input { background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; }
-        .executive-input:focus { border-color: #059669; outline: none; box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12); }
-        tr:hover { background-color: #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; }
+        .input-box { background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; }
+        .input-box:focus { border-color: #059669; outline: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="min-h-screen pb-12 sm:pb-16">
+<body class="min-h-screen pb-12">
 
-    <!-- Hidden File Input for CSV Import -->
+    <!-- File Input for Excel CSV Import -->
     <input type="file" id="csvFileInput" accept=".csv" onchange="handleCSVImport(event)" class="hidden">
 
-    <!-- Security PIN Lock Screen Overlay -->
+    <!-- Security PIN Lock Screen -->
     <div id="pinLockOverlay" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 text-center space-y-4 sm:space-y-5 shadow-2xl border border-slate-100">
-            <div class="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-50 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-xl sm:text-2xl shadow-inner">
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <div>
-                <h2 class="font-extrabold text-slate-900 text-lg sm:text-xl">Aqib Arain Vault</h2>
-                <p class="text-xs text-slate-500 mt-1">Enter 4-Digit Security PIN to Unlock</p>
-            </div>
-            <input type="password" id="pinInput" maxlength="4" placeholder="••••" class="w-full text-center text-2xl sm:text-3xl tracking-widest font-mono p-3 rounded-2xl executive-input focus:ring-2 focus:ring-emerald-500 outline-none">
-            <button onclick="unlockApp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition text-sm">Unlock App</button>
-            <div class="flex justify-between items-center text-[11px] pt-1 text-slate-400">
-                <span>Default PIN: 1234</span>
-                <button onclick="changePIN()" class="text-emerald-600 hover:underline font-bold">Change PIN</button>
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-xl"><i class="fa-solid fa-lock"></i></div>
+            <h2 class="font-extrabold text-slate-900 text-lg">Aqib Arain Vault</h2>
+            <input type="password" id="pinInput" maxlength="4" placeholder="••••" class="w-full text-center text-2xl font-mono p-3 rounded-2xl input-box outline-none">
+            <button onclick="unlockApp()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-2xl shadow-md">Unlock App</button>
+            <div class="flex justify-between text-xs text-slate-400">
+                <span>Default: 1234</span>
+                <button onclick="changePIN()" class="text-emerald-600 font-bold">Change PIN</button>
             </div>
         </div>
     </div>
 
-    <!-- Top Executive Header -->
+    <!-- Header Bar -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
-            <!-- Brand Logo & Title -->
-            <div class="flex items-center space-x-2.5">
-                <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-slate-900 text-emerald-400 flex items-center justify-center font-black text-base sm:text-xl shadow-md">
-                    <i class="fa-solid fa-user-tie"></i>
-                </div>
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-9 h-9 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center font-black text-base"><i class="fa-solid fa-user-tie"></i></div>
                 <div>
-                    <div class="flex items-center space-x-1.5">
-                        <h1 class="font-extrabold text-sm sm:text-lg text-slate-900 tracking-tight">Aqib Arain</h1>
-                        <span id="syncIndicator" class="text-[9px] sm:text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active
-                        </span>
-                    </div>
-                    <p class="text-[10px] sm:text-xs text-slate-500">Tax Advisor Vault</p>
+                    <h1 class="font-extrabold text-sm sm:text-base text-slate-900">Aqib Arain</h1>
+                    <p class="text-[10px] text-slate-500">Tax Advisor Vault</p>
                 </div>
             </div>
             
-            <!-- Mobile Touch Action Buttons -->
-            <div class="flex items-center space-x-1 sm:space-x-2">
-                <button onclick="cloudSyncMenu()" title="Live Cross-Device Sync" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition flex items-center space-x-1">
-                    <i class="fa-solid fa-rotate text-emerald-600 text-sm"></i>
-                    <span class="hidden md:inline">Sync</span>
-                </button>
-                <button onclick="triggerCSVImport()" title="Import CSV File" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold border border-purple-200 transition flex items-center space-x-1">
-                    <i class="fa-solid fa-file-import text-purple-600 text-sm"></i>
-                    <span class="hidden md:inline">Import</span>
-                </button>
-                <button onclick="clearAllClientsData()" title="Wipe All Data" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200 transition">
-                    <i class="fa-solid fa-trash-can text-rose-600 text-sm"></i>
-                </button>
-                <button onclick="changePIN()" title="Change Security PIN" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
-                    <i class="fa-solid fa-key text-amber-600"></i>
-                </button>
-                <button onclick="lockApp()" title="Lock App Screen" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition">
-                    <i class="fa-solid fa-lock text-slate-600"></i>
-                </button>
-                <button onclick="saveToGoogleDrive()" title="Auto Save to Google Drive" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition flex items-center space-x-1">
-                    <i class="fa-brands fa-google-drive text-emerald-600 text-sm"></i>
-                    <span class="hidden md:inline">Drive Save</span>
-                </button>
-                <button onclick="exportToCSV()" title="Download Excel CSV" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition flex items-center space-x-1">
-                    <i class="fa-solid fa-file-csv text-blue-600 text-sm"></i>
-                    <span class="hidden md:inline">CSV</span>
-                </button>
-                <button onclick="openClientModal()" class="px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center space-x-1 sm:space-x-2">
-                    <i class="fa-solid fa-plus text-xs sm:text-sm"></i>
-                    <span class="text-xs">New Client</span>
-                </button>
+            <div class="flex items-center space-x-1.5">
+                <button onclick="syncCloud(true)" title="Sync Cloud" class="p-2 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200"><i class="fa-solid fa-rotate"></i> Sync</button>
+                <button onclick="triggerCSVImport()" title="Import CSV" class="p-2 rounded-xl bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200"><i class="fa-solid fa-file-import"></i> Import</button>
+                <button onclick="clearAllData()" title="Wipe Data" class="p-2 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200"><i class="fa-solid fa-trash-can"></i></button>
+                <button onclick="lockApp()" title="Lock" class="p-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200"><i class="fa-solid fa-lock"></i></button>
+                <button onclick="exportToCSV()" title="CSV" class="p-2 rounded-xl bg-slate-100 text-blue-600 text-xs font-bold border border-slate-200"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                <button onclick="openClientModal()" class="px-3 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs"><i class="fa-solid fa-plus mr-1"></i> New</button>
             </div>
         </div>
     </nav>
 
-    <!-- Main Container -->
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mt-4 sm:mt-8 space-y-4 sm:space-y-8">
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 mt-6 space-y-6">
 
-        <!-- Responsive Financial Analytics Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-            <div class="executive-card p-3.5 sm:p-5 rounded-2xl flex items-center justify-between">
-                <div>
-                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Total Deals</p>
-                    <h3 id="statAgreed" class="text-base sm:text-xl md:text-2xl font-extrabold text-slate-900 mt-0.5 sm:mt-1">Rs. 0</h3>
-                </div>
-                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm sm:text-lg"><i class="fa-solid fa-handshake"></i></div>
+        <!-- Financial Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="card p-4 rounded-2xl">
+                <p class="text-[10px] text-slate-500 uppercase font-bold">Total Deals</p>
+                <h3 id="statAgreed" class="text-base sm:text-xl font-extrabold text-slate-900 mt-1">Rs. 0</h3>
             </div>
-
-            <div class="executive-card p-3.5 sm:p-5 rounded-2xl flex items-center justify-between">
-                <div>
-                    <p class="text-[10px] sm:text-xs font-medium text-emerald-700 uppercase tracking-wider">Received</p>
-                    <h3 id="statReceived" class="text-base sm:text-xl md:text-2xl font-extrabold text-emerald-600 mt-0.5 sm:mt-1">Rs. 0</h3>
-                </div>
-                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm sm:text-lg"><i class="fa-solid fa-wallet"></i></div>
+            <div class="card p-4 rounded-2xl">
+                <p class="text-[10px] text-emerald-700 uppercase font-bold">Received</p>
+                <h3 id="statReceived" class="text-base sm:text-xl font-extrabold text-emerald-600 mt-1">Rs. 0</h3>
             </div>
-
-            <div class="executive-card p-3.5 sm:p-5 rounded-2xl flex items-center justify-between">
-                <div>
-                    <p class="text-[10px] sm:text-xs font-medium text-rose-700 uppercase tracking-wider">Remaining</p>
-                    <h3 id="statRemaining" class="text-base sm:text-xl md:text-2xl font-extrabold text-rose-600 mt-0.5 sm:mt-1">Rs. 0</h3>
-                </div>
-                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-sm sm:text-lg"><i class="fa-solid fa-scale-unbalanced"></i></div>
+            <div class="card p-4 rounded-2xl">
+                <p class="text-[10px] text-rose-700 uppercase font-bold">Remaining</p>
+                <h3 id="statRemaining" class="text-base sm:text-xl font-extrabold text-rose-600 mt-1">Rs. 0</h3>
             </div>
-
-            <div class="executive-card p-3.5 sm:p-5 rounded-2xl flex items-center justify-between">
-                <div>
-                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider">Active Clients</p>
-                    <h3 id="statTotalClients" class="text-base sm:text-xl md:text-2xl font-extrabold text-blue-600 mt-0.5 sm:mt-1">0</h3>
-                </div>
-                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm sm:text-lg"><i class="fa-solid fa-users"></i></div>
+            <div class="card p-4 rounded-2xl">
+                <p class="text-[10px] text-slate-500 uppercase font-bold">Total Clients</p>
+                <h3 id="statTotalClients" class="text-base sm:text-xl font-extrabold text-blue-600 mt-1">0</h3>
             </div>
         </div>
 
-        <!-- Scrollable Tabs & Search Controls -->
-        <div class="space-y-3 sm:space-y-4">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-200 pb-3 sm:pb-4">
-                <!-- Segmented Tabs -->
-                <div class="bg-slate-200/70 p-1 sm:p-1.5 rounded-2xl flex space-x-1 text-xs font-medium overflow-x-auto no-scrollbar">
-                    <button onclick="switchPortalTab('ALL')" id="tabALL" class="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 bg-white text-slate-900 font-bold shadow-sm whitespace-nowrap">
-                        <i class="fa-solid fa-layer-group text-slate-700 text-xs"></i>
-                        <span>All Clients</span>
-                        <span id="badgeALL" class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-800 text-[9px] sm:text-[10px] font-bold">0</span>
-                    </button>
-                    <button onclick="switchPortalTab('FBR')" id="tabFBR" class="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 whitespace-nowrap">
-                        <i class="fa-solid fa-building-columns text-emerald-600 text-xs"></i>
-                        <span>FBR Portal</span>
-                        <span id="badgeFBR" class="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] sm:text-[10px] font-bold">0</span>
-                    </button>
-                    <button onclick="switchPortalTab('GTE')" id="tabGTE" class="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 whitespace-nowrap">
-                        <i class="fa-solid fa-briefcase text-indigo-600 text-xs"></i>
-                        <span>GTE Portal</span>
-                        <span id="badgeGTE" class="ml-1 px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[9px] sm:text-[10px] font-bold">0</span>
-                    </button>
+        <!-- Filters & Search -->
+        <div class="space-y-3">
+            <div class="flex flex-col sm:flex-row justify-between gap-3 border-b pb-3">
+                <div class="bg-slate-200/70 p-1 rounded-2xl flex space-x-1 text-xs font-bold overflow-x-auto no-scrollbar">
+                    <button onclick="switchPortalTab('ALL')" id="tabALL" class="px-4 py-2 rounded-xl bg-white text-slate-900 shadow-sm whitespace-nowrap">All Clients <span id="badgeALL" class="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 text-[10px]">0</span></button>
+                    <button onclick="switchPortalTab('FBR')" id="tabFBR" class="px-4 py-2 rounded-xl text-slate-600 whitespace-nowrap">FBR Portal <span id="badgeFBR" class="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px]">0</span></button>
+                    <button onclick="switchPortalTab('GTE')" id="tabGTE" class="px-4 py-2 rounded-xl text-slate-600 whitespace-nowrap">GTE Portal <span id="badgeGTE" class="ml-1 px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px]">0</span></button>
                 </div>
 
-                <!-- Filters -->
-                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5 sm:gap-2 text-xs">
-                    <select id="yearFilter" onchange="filterClients()" class="executive-input rounded-xl px-2.5 py-2 bg-white text-slate-700 font-bold text-xs">
-                        <option value="ALL">All Tax Years</option>
-                        <option value="2027">TY 2027</option>
-                        <option value="2026">TY 2026</option>
-                        <option value="2025">TY 2025</option>
-                        <option value="2024">TY 2024</option>
-                        <option value="2023">TY 2023</option>
-                    </select>
-                    <select id="atlFilter" onchange="filterClients()" class="executive-input rounded-xl px-2.5 py-2 bg-white text-slate-700 font-bold text-xs">
-                        <option value="ALL">All ATL Status</option>
-                        <option value="Active">🟢 ATL Active</option>
-                        <option value="Inactive">🔴 ATL Inactive</option>
-                    </select>
-                    <select id="paymentFilter" onchange="filterClients()" class="executive-input rounded-xl px-2.5 py-2 bg-white text-slate-700 text-xs">
-                        <option value="ALL">All Payments</option>
-                        <option value="Paid">Paid Only</option>
-                        <option value="Partial">Partial Pay</option>
-                        <option value="Unpaid">Unpaid Only</option>
-                    </select>
-                    <select id="contactFilter" onchange="filterClients()" class="executive-input rounded-xl px-2.5 py-2 bg-white text-slate-700 text-xs">
-                        <option value="ALL">All Contacts</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Not Contacted">Not Contacted</option>
-                    </select>
+                <div class="grid grid-cols-2 sm:flex gap-2 text-xs">
+                    <select id="yearFilter" onchange="filterClients()" class="input-box rounded-xl px-2.5 py-2 font-bold"><option value="ALL">All Tax Years</option><option value="2027">TY 2027</option><option value="2026">TY 2026</option><option value="2025">TY 2025</option></select>
+                    <select id="atlFilter" onchange="filterClients()" class="input-box rounded-xl px-2.5 py-2 font-bold"><option value="ALL">All ATL</option><option value="Active">🟢 Active</option><option value="Inactive">🔴 Inactive</option></select>
                 </div>
             </div>
 
-            <!-- Search Input -->
             <div class="relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs sm:text-sm"></i>
-                <input type="text" id="searchInput" oninput="filterClients()" placeholder="Search Name, Phone, CNIC, NTN, or Reference Name/CNIC..." 
-                    class="w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 rounded-2xl executive-input text-xs sm:text-sm placeholder-slate-400 shadow-sm">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                <input type="text" id="searchInput" oninput="filterClients()" placeholder="Search Name, Phone, CNIC, NTN, or Reference..." class="w-full pl-9 pr-4 py-2.5 rounded-2xl input-box text-xs">
             </div>
         </div>
 
-        <!-- DESKTOP TABLE VIEW (Visible on tablet/laptop screens) -->
-        <div class="hidden md:block executive-card rounded-3xl overflow-hidden shadow-sm">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead class="bg-slate-100/80 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
-                        <tr>
-                            <th class="py-3.5 px-4">Portal / Year</th>
-                            <th class="py-3.5 px-4">Client Contact & Reference</th>
-                            <th class="py-3.5 px-4">CNIC & NTN</th>
-                            <th class="py-3.5 px-4">Financial Status</th>
-                            <th class="py-3.5 px-4">Portal Password</th>
-                            <th class="py-3.5 px-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="clientTableBody" class="divide-y divide-slate-200/70">
-                        <!-- Desktop Table Rows -->
-                    </tbody>
-                </table>
-            </div>
+        <!-- Laptop Desktop Table View -->
+        <div class="hidden md:block card rounded-3xl overflow-hidden shadow-sm">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px]">
+                    <tr>
+                        <th class="py-3 px-4">Portal / Year</th>
+                        <th class="py-3 px-4">Client Contact & Ref</th>
+                        <th class="py-3 px-4">CNIC & NTN</th>
+                        <th class="py-3 px-4">Financials</th>
+                        <th class="py-3 px-4">Portal Password</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="clientTableBody" class="divide-y divide-slate-200"></tbody>
+            </table>
         </div>
 
-        <!-- MOBILE CARDS CONTAINER (Visible on phones) -->
-        <div id="mobileCardsContainer" class="block md:hidden space-y-3">
-            <!-- Dynamic Mobile Cards -->
-        </div>
+        <!-- Mobile Touch Cards View -->
+        <div id="mobileCardsContainer" class="block md:hidden space-y-3"></div>
 
     </div>
 
-    <!-- Modal Drawer (Optimized for Mobile Screens) -->
+    <!-- Add/Edit Client Modal -->
     <div id="clientModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-end sm:items-center p-0 sm:p-4 hidden">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-3.5 shadow-2xl border border-slate-100 max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h2 id="modalTitle" class="font-bold text-slate-900 text-base sm:text-lg">Add Client Record</h2>
-                <button onclick="closeClientModal()" class="text-slate-400 hover:text-slate-600 transition p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 space-y-3 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h2 id="modalTitle" class="font-bold text-slate-900 text-base">Add Client Record</h2>
+                <button onclick="closeClientModal()" class="text-slate-400 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
             <form id="clientForm" onsubmit="saveClient(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="clientId">
 
-                <!-- Row 1: Portal & Tax Year -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div id="wrapperPortalType" class="col-span-1">
-                        <label class="block font-medium text-slate-700 mb-1">Portal Category</label>
-                        <select id="portalType" onchange="togglePortalFields()" class="w-full p-2.5 rounded-xl executive-input font-bold text-emerald-700 bg-white">
-                            <option value="FBR">FBR Portal</option>
-                            <option value="GTE">GTE Portal</option>
-                        </select>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div id="wrapperPortalType"><label class="block font-medium mb-1">Portal Category</label><select id="portalType" onchange="togglePortalFields()" class="w-full p-2.5 rounded-xl input-box font-bold text-emerald-700"><option value="FBR">FBR Portal</option><option value="GTE">GTE Portal</option></select></div>
+                    <div id="wrapperTaxYear"><label class="block font-medium mb-1">Tax Year</label><select id="taxYear" class="w-full p-2.5 rounded-xl input-box font-bold text-blue-700"><option value="2027">TY 2027</option><option value="2026" selected>TY 2026</option><option value="2025">TY 2025</option></select></div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div id="wrapperFullName"><label class="block font-medium mb-1">Full Name</label><input type="text" id="fullName" placeholder="Client Name" class="w-full p-2.5 rounded-xl input-box"></div>
+                    <div id="wrapperAtlStatus"><label class="block font-medium mb-1">ATL Filer Status</label><select id="atlStatus" class="w-full p-2.5 rounded-xl input-box font-bold"><option value="Active">🟢 ATL Active</option><option value="Inactive">🔴 ATL Inactive</option></select></div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div><label class="block font-medium mb-1">Phone Number (11 Digits)</label><input type="text" id="phone" placeholder="03001234567" oninput="formatPhone(this)" maxlength="11" class="w-full p-2.5 rounded-xl input-box font-mono"></div>
+                    <div><label class="block font-medium mb-1">Email Address</label><input type="email" id="email" placeholder="Optional Email" class="w-full p-2.5 rounded-xl input-box"></div>
+                </div>
+
+                <div id="rowCnicNtn" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div><label class="block font-medium mb-1">CNIC Number</label><input type="text" id="cnic" placeholder="12345-1234567-1" oninput="formatCNIC(this)" maxlength="15" class="w-full p-2.5 rounded-xl input-box font-mono"></div>
+                    <div><label class="block font-medium mb-1">NTN Number (7 Digits)</label><input type="text" id="ntn" placeholder="1234567" oninput="formatNTN(this)" maxlength="7" class="w-full p-2.5 rounded-xl input-box font-mono"></div>
+                </div>
+
+                <div><label class="block font-medium mb-1"><i class="fa-solid fa-user-tag text-indigo-500 mr-1"></i> Referred By (Reference)</label><input type="text" id="referredBy" placeholder="Name or CNIC of person who referred this client" class="w-full p-2.5 rounded-xl input-box"></div>
+
+                <div class="p-3 bg-slate-50 rounded-2xl border space-y-2">
+                    <span class="font-bold text-slate-800 text-xs"><i class="fa-solid fa-coins text-amber-500 mr-1"></i> Fee & Payment Deal</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block font-medium mb-1">Deal Fee (Rs.)</label><input type="number" id="feeAgreed" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2 rounded-xl input-box font-mono"></div>
+                        <div><label class="block font-medium mb-1">Fee Received (Rs.)</label><input type="number" id="feeReceived" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2 rounded-xl input-box font-mono font-bold text-emerald-700"></div>
                     </div>
-                    <div id="wrapperTaxYear" class="col-span-1">
-                        <label class="block font-medium text-slate-700 mb-1">Tax Year</label>
-                        <select id="taxYear" class="w-full p-2.5 rounded-xl executive-input font-bold text-blue-700 bg-white">
-                            <option value="2027">TY 2027</option>
-                            <option value="2026" selected>TY 2026</option>
-                            <option value="2025">TY 2025</option>
-                            <option value="2024">TY 2024</option>
-                            <option value="2023">TY 2023</option>
-                        </select>
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div><label class="block font-medium mb-1">Payment Status</label><select id="paymentStatus" class="w-full p-2 rounded-xl input-box"><option value="Unpaid">Unpaid</option><option value="Partial">Partial Pay</option><option value="Paid">Paid</option></select></div>
+                        <div><label class="block font-medium mb-1">Contact Status</label><select id="contactStatus" class="w-full p-2 rounded-xl input-box"><option value="Not Contacted">Not Contacted</option><option value="Contacted">Contacted</option></select></div>
                     </div>
                 </div>
 
-                <!-- Row 2: Full Name & ATL Status -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div id="wrapperFullName" class="col-span-1">
-                        <label class="block font-medium text-slate-700 mb-1">Full Name</label>
-                        <input type="text" id="fullName" placeholder="Client Name" class="w-full p-2.5 rounded-xl executive-input">
-                    </div>
-                    <div id="wrapperAtlStatus" class="col-span-1">
-                        <label class="block font-medium text-slate-700 mb-1">ATL Filer Status</label>
-                        <select id="atlStatus" class="w-full p-2.5 rounded-xl executive-input font-bold bg-white">
-                            <option value="Active">🟢 ATL Active</option>
-                            <option value="Inactive">🔴 ATL Inactive</option>
-                        </select>
-                    </div>
-                </div>
+                <div id="wrapperTaxPassword"><label class="block font-medium mb-1">Tax Portal Password</label><input type="text" id="taxPassword" placeholder="Optional Password" class="w-full p-2.5 rounded-xl input-box font-mono"></div>
 
-                <!-- Row 3: Phone (11 Digits Limit) & Email -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                        <label class="block font-medium text-slate-700 mb-1">Phone Number (11 Digits)</label>
-                        <input type="text" id="phone" placeholder="03001234567" oninput="formatPhone(this)" maxlength="11" class="w-full p-2.5 rounded-xl executive-input font-mono">
-                    </div>
-                    <div>
-                        <label class="block font-medium text-slate-700 mb-1">Email Address</label>
-                        <input type="email" id="email" placeholder="Optional Email" class="w-full p-2.5 rounded-xl executive-input">
-                    </div>
-                </div>
+                <div><label class="block font-medium mb-1">Notes / Filing Details</label><textarea id="notes" rows="2" placeholder="Optional Notes..." class="w-full p-2.5 rounded-xl input-box"></textarea></div>
 
-                <!-- Row 4: CNIC & NTN (7 Digits Limit) (Hidden for GTE) -->
-                <div id="rowCnicNtn" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                        <label class="block font-medium text-slate-700 mb-1">CNIC Number</label>
-                        <input type="text" id="cnic" placeholder="12345-1234567-1" oninput="formatCNIC(this)" maxlength="15" class="w-full p-2.5 rounded-xl executive-input font-mono">
-                    </div>
-                    <div>
-                        <label class="block font-medium text-slate-700 mb-1">NTN Number (7 Digits)</label>
-                        <input type="text" id="ntn" placeholder="1234567" oninput="formatNTN(this)" maxlength="7" class="w-full p-2.5 rounded-xl executive-input font-mono">
-                    </div>
-                </div>
-
-                <!-- Reference / Referred By Field -->
-                <div>
-                    <label class="block font-medium text-slate-700 mb-1"><i class="fa-solid fa-user-tag text-indigo-500 mr-1"></i> Referred By (Reference)</label>
-                    <input type="text" id="referredBy" placeholder="Name or CNIC of person who referred this taxpayer" class="w-full p-2.5 rounded-xl executive-input">
-                </div>
-
-                <!-- Fee Deal Section -->
-                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-                    <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5"><i class="fa-solid fa-coins text-amber-500"></i> Fee & Payment Deal</span>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <div>
-                            <label class="block font-medium text-slate-600 mb-1">Deal Fee (Rs.)</label>
-                            <input type="number" id="feeAgreed" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2 rounded-xl executive-input font-mono">
-                        </div>
-                        <div>
-                            <label class="block font-medium text-slate-600 mb-1">Fee Received (Rs.)</label>
-                            <input type="number" id="feeReceived" placeholder="0" oninput="autoCalculateFeeStatus()" class="w-full p-2 rounded-xl executive-input font-mono font-bold text-emerald-700">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2.5 pt-1">
-                        <div>
-                            <label class="block font-medium text-slate-600 mb-1">Payment Status</label>
-                            <select id="paymentStatus" class="w-full p-2 rounded-xl executive-input bg-white">
-                                <option value="Unpaid">Unpaid</option>
-                                <option value="Partial">Partial Pay</option>
-                                <option value="Paid">Paid</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium text-slate-600 mb-1">Contact Status</label>
-                            <select id="contactStatus" class="w-full p-2 rounded-xl executive-input bg-white">
-                                <option value="Not Contacted">Not Contacted</option>
-                                <option value="Contacted">Contacted</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tax Password Wrapper (Hidden for GTE) -->
-                <div id="wrapperTaxPassword">
-                    <label class="block font-medium text-slate-700 mb-1">Tax Portal Password</label>
-                    <input type="text" id="taxPassword" placeholder="Optional Password" class="w-full p-2.5 rounded-xl executive-input font-mono">
-                </div>
-
-                <div>
-                    <label class="block font-medium text-slate-700 mb-1">Notes / Filing Details</label>
-                    <textarea id="notes" rows="2" placeholder="Optional Notes..." class="w-full p-2.5 rounded-xl executive-input"></textarea>
-                </div>
-
-                <div class="pt-3 flex justify-end space-x-2 border-t border-slate-100">
-                    <button type="button" onclick="closeClientModal()" class="px-4 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 transition">Cancel</button>
-                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md transition">Save Client Record</button>
+                <div class="pt-2 flex justify-end space-x-2 border-t">
+                    <button type="button" onclick="closeClientModal()" class="px-4 py-2 rounded-xl text-slate-500">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 text-white font-bold rounded-xl shadow-md">Save Record</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- JavaScript Engine -->
+    <!-- JavaScript Application Engine -->
     <script>
-        const CLOUD_BLOB_URL = "https://jsonblob.com/api/jsonBlob/1220000000000000000";
+        // 🚨 PASTE YOUR REAL SUPABASE KEYS HERE:
+        const SUPABASE_URL = "https://xmrprtdsucbqkyflbgfj.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtcnBydGRzdWNicWt5ZmxiZ2ZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5OTM5MzksImV4cCI6MjEwMDU2OTkzOX0.MhmeAjTaWAXOetL4iptWD9A8YeSpLXP6Mxxn_f_VpC0"; // Replace with your key from Supabase Dashboard
         const SECRET_KEY = "tax-advisor-secret-key";
 
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let clientsData = [];
         let activeTab = 'ALL';
         let APP_PIN = localStorage.getItem('aqib_app_pin') || '1234';
 
-        function generateUUID() {
-            return 'id-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now().toString(36);
-        }
-
+        function generateUUID() { return 'id-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now().toString(36); }
         function encryptText(text) { return text ? CryptoJS.AES.encrypt(text, SECRET_KEY).toString() : ''; }
         function decryptText(cipher) { 
             if (!cipher) return '';
-            try {
-                const bytes = CryptoJS.AES.decrypt(cipher, SECRET_KEY);
-                return bytes.toString(CryptoJS.enc.Utf8) || cipher;
-            } catch(e) { return cipher; }
+            try { return CryptoJS.AES.decrypt(cipher, SECRET_KEY).toString(CryptoJS.enc.Utf8) || cipher; } catch(e) { return cipher; }
         }
 
-        // 🌐 DUAL CROSS-DEVICE CLOUD SYNC MENU
-        function cloudSyncMenu() {
-            Swal.fire({
-                title: '🌐 Cross-Device Sync Options',
-                html: `
-                    <div class="space-y-2 pt-2 text-left text-xs font-sans">
-                        <button onclick="Swal.close(); pushToCloud();" class="w-full p-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> 📤 Upload Laptop Data to Cloud
-                        </button>
-                        <button onclick="Swal.close(); pullFromCloud();" class="w-full p-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-cloud-arrow-down"></i> 📥 Download Cloud Data to Phone
-                        </button>
-                        <div class="border-t border-slate-200 my-2 pt-2 text-center text-slate-400 font-semibold text-[11px]">OR USE DIRECT SYNC CODE</div>
-                        <button onclick="Swal.close(); showSyncCodeModal();" class="w-full p-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl flex items-center justify-center gap-2 border border-slate-300">
-                            <i class="fa-solid fa-code"></i> 📋 Generate Laptop Sync Code
-                        </button>
-                        <button onclick="Swal.close(); importSyncCode();" class="w-full p-3 bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold rounded-xl flex items-center justify-center gap-2 border border-purple-200">
-                            <i class="fa-solid fa-paste"></i> 📥 Paste Sync Code on Phone
-                        </button>
-                    </div>
-                `,
-                showConfirmButton: false,
-                showCancelButton: true,
-                cancelButtonText: 'Close',
-                cancelButtonColor: '#64748b'
-            });
-        }
-
-        async function pushToCloud() {
-            Swal.fire({
-                title: 'Uploading to Cloud...',
-                text: `Uploading ${clientsData.length} records to cloud relay...`,
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            try {
-                const res = await fetch(CLOUD_BLOB_URL, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify(clientsData)
-                });
-
-                if (res.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Cloud Upload Complete!',
-                        text: `Successfully uploaded ${clientsData.length} client records! Open your phone and tap Sync ➔ Download to Phone.`,
-                        confirmButtonColor: '#059669'
-                    });
-                } else {
-                    throw new Error("Upload Failed");
-                }
-            } catch(e) {
-                // If network/adblocker blocks cloud upload, auto popup the Sync Code!
-                showSyncCodeModal();
-            }
-        }
-
-        async function pullFromCloud() {
-            Swal.fire({
-                title: 'Downloading from Cloud...',
-                text: 'Fetching latest client records...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            try {
-                const res = await fetch(CLOUD_BLOB_URL, { headers: { 'Accept': 'application/json' } });
-                if (res.ok) {
-                    const cloudData = await res.json();
-                    if (Array.isArray(cloudData) && cloudData.length > 0) {
-                        clientsData = cloudData;
-                        localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
-                        localStorage.removeItem('aqib_vault_wiped');
-                        updateCombinedFinancials();
-                        filterClients();
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Sync Complete!',
-                            text: `Successfully downloaded ${clientsData.length} records onto your mobile device!`,
-                            confirmButtonColor: '#059669'
-                        });
-                        return;
-                    }
-                }
-                throw new Error("Cloud empty");
-            } catch(e) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Use Direct Sync Code',
-                    text: 'Cloud connection was blocked or empty. Click "Paste Sync Code" to transfer directly from laptop!',
-                    confirmButtonText: 'Paste Sync Code',
-                    confirmButtonColor: '#4f46e5'
-                }).then((r) => {
-                    if (r.isConfirmed) importSyncCode();
-                });
-            }
-        }
-
-        // DIRECT CODE SYNC (100% ADBLOCKER-PROOF & OFFLINE)
-        function showSyncCodeModal() {
-            const compressedData = btoa(unescape(encodeURIComponent(JSON.stringify(clientsData))));
+        // Real-Time Cloud Database Sync Engine
+        async function syncCloud(showNotice = false) {
+            if (showNotice) Swal.fire({ title: 'Syncing with Cloud...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             
-            Swal.fire({
-                title: '📋 Laptop Sync Code',
-                text: 'Copy this code and paste it on your phone:',
-                input: 'textarea',
-                inputValue: compressedData,
-                inputAttributes: { readonly: true, class: 'font-mono text-xs' },
-                showCancelButton: true,
-                confirmButtonText: 'Copy Sync Code',
-                cancelButtonText: 'Close',
-                confirmButtonColor: '#059669'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    navigator.clipboard.writeText(compressedData);
-                    Swal.fire({ icon: 'success', title: 'Code Copied!', text: 'Now open your phone, click Sync ➔ Paste Sync Code!', timer: 2000 });
+            try {
+                const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
+                if (!error && data) {
+                    clientsData = data;
+                    localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+                    updateCombinedFinancials();
+                    filterClients();
+                    if (showNotice) Swal.fire({ icon: 'success', title: 'Cloud Sync Complete!', text: `Updated ${data.length} records!`, timer: 1500, showConfirmButton: false });
+                } else if (showNotice) {
+                    Swal.fire({ icon: 'info', title: 'Local Storage Active', text: 'Displaying saved local records.' });
                 }
-            });
+            } catch(e) {
+                if (showNotice) Swal.fire({ icon: 'info', title: 'Local Storage Active', text: 'Displaying saved local records.' });
+            }
         }
 
-        function importSyncCode() {
-            Swal.fire({
-                title: '📥 Paste Sync Code',
-                text: 'Paste the Sync Code generated from your laptop:',
-                input: 'textarea',
-                inputPlaceholder: 'Paste code here...',
-                showCancelButton: true,
-                confirmButtonText: 'Import All Clients',
-                confirmButtonColor: '#059669'
-            }).then((result) => {
-                if (result.isConfirmed && result.value) {
-                    try {
-                        const decompressed = JSON.parse(decodeURIComponent(escape(atob(result.value.trim()))));
-                        if (Array.isArray(decompressed)) {
-                            clientsData = decompressed;
-                            localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
-                            localStorage.removeItem('aqib_vault_wiped');
-                            updateCombinedFinancials();
-                            filterClients();
-                            Swal.fire({ icon: 'success', title: 'Sync Complete!', text: `Successfully loaded ${clientsData.length} clients on your phone!` });
-                        }
-                    } catch(err) {
-                        Swal.fire({ icon: 'error', title: 'Invalid Code', text: 'Please make sure you copied the full Sync Code from your laptop.' });
-                    }
-                }
-            });
-        }
-
-        // 🗑️ CLEAR ALL DATA FUNCTION
-        async function clearAllClientsData() {
-            const confirm1 = await Swal.fire({
-                title: '🗑️ Wipe Entire Vault?',
-                text: "This will delete ALL client records and passwords from this app. Are you sure?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#e11d48',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Yes, Delete All Data',
-                cancelButtonText: 'Cancel'
-            });
-
-            if (confirm1.isConfirmed) {
-                const pinPrompt = await Swal.fire({
-                    title: 'Security Authorization',
-                    text: 'Enter your 4-Digit Security PIN to wipe data:',
-                    input: 'password',
-                    inputAttributes: { maxlength: 4 },
-                    inputPlaceholder: '••••',
-                    showCancelButton: true,
-                    confirmButtonText: 'Confirm Wipe',
-                    confirmButtonColor: '#e11d48'
-                });
-
+        // Wipe All Data
+        async function clearAllData() {
+            const confirm = await Swal.fire({ title: 'Wipe Vault Data?', text: 'Are you sure you want to delete all client records?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48' });
+            if (confirm.isConfirmed) {
+                const pinPrompt = await Swal.fire({ title: 'Enter PIN to confirm:', input: 'password', inputAttributes: { maxlength: 4 }, showCancelButton: true });
                 if (pinPrompt.isConfirmed && pinPrompt.value === APP_PIN) {
                     clientsData = [];
                     localStorage.setItem('aqib_clients_cache', JSON.stringify([]));
-                    localStorage.setItem('aqib_vault_wiped', 'true');
-
+                    try { await db.from('clients').delete().neq('id', '0'); } catch(e) {}
                     updateCombinedFinancials();
                     filterClients();
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Vault Cleared!',
-                        text: 'All data permanently removed. Click "Import" to upload your Google Password CSV file!',
-                        confirmButtonColor: '#059669'
-                    });
-                } else if (pinPrompt.isConfirmed) {
-                    Swal.fire({ icon: 'error', title: 'Incorrect PIN', text: 'Data was not deleted.' });
+                    Swal.fire({ icon: 'success', title: 'Vault Cleared!' });
                 }
             }
         }
 
-        // UNIVERSAL CSV & GOOGLE PASSWORD MANAGER IMPORT ENGINE
-        function triggerCSVImport() {
-            document.getElementById('csvFileInput').click();
-        }
-
+        // CSV Import Engine
+        function triggerCSVImport() { document.getElementById('csvFileInput').click(); }
         function handleCSVImport(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
-            reader.onload = function(evt) {
-                const content = evt.target.result;
-                const lines = content.split(/\r\n|\n/);
-                let importedBatch = [];
-
+            reader.onload = async function(evt) {
+                const lines = evt.target.result.split(/\r\n|\n/);
+                let imported = [];
                 lines.forEach((line, index) => {
                     if (!line.trim()) return;
-                    
-                    const cols = line.split(',').map(col => col.replace(/^"(.*)"$/, '$1').trim());
-                    
+                    const cols = line.split(',').map(c => c.replace(/^"(.*)"$/, '$1').trim());
                     if (cols.length >= 2) {
-                        let userName = '';
-                        let password = '';
-                        let clientTitle = '';
-
-                        if (cols.length >= 4) {
-                            clientTitle = cols[0];
-                            userName = cols[2] || cols[0];
-                            password = cols[3];
-                        } else {
-                            userName = cols[0];
-                            password = cols[1];
-                        }
-
-                        if (index === 0 && (
-                            userName.toLowerCase().includes('user') || 
-                            password.toLowerCase().includes('pass') || 
-                            cols[0].toLowerCase() === 'name' || 
-                            cols[0] === 'Portal'
-                        )) {
-                            return;
-                        }
-
-                        if (userName && password) {
-                            let cleanCNIC = '';
-                            let digitsOnly = userName.replace(/\D/g, '');
-                            if (digitsOnly.length === 13) {
-                                cleanCNIC = digitsOnly.slice(0,5) + '-' + digitsOnly.slice(5,12) + '-' + digitsOnly.slice(12,13);
-                            } else if (/^\d{5}-\d{7}-\d{1}$/.test(userName)) {
-                                cleanCNIC = userName;
-                            }
-
-                            const displayName = clientTitle && !clientTitle.toLowerCase().includes('iris') && !clientTitle.toLowerCase().includes('fbr') 
-                                ? clientTitle 
-                                : (cleanCNIC ? 'Client (' + cleanCNIC + ')' : userName);
-
-                            const newClient = {
-                                id: generateUUID(),
-                                portal_type: 'FBR',
-                                tax_year: '2026',
-                                atl_status: 'Active',
-                                full_name: displayName,
-                                phone: '',
-                                email: '',
-                                cnic: cleanCNIC,
-                                ntn: '',
-                                referred_by: 'Google Password Import',
-                                fee_agreed: 0,
-                                fee_received: 0,
-                                tax_portal_password_encrypted: encryptText(password),
-                                payment_status: 'Unpaid',
-                                contact_status: 'Not Contacted',
-                                notes: 'Imported from Google Passwords / CSV'
-                            };
-
-                            importedBatch.push(newClient);
+                        let user = cols.length >= 4 ? (cols[2] || cols[0]) : cols[0];
+                        let pass = cols.length >= 4 ? cols[3] : cols[1];
+                        if (index === 0 && (user.toLowerCase().includes('user') || pass.toLowerCase().includes('pass'))) return;
+                        if (user && pass) {
+                            let cleanCNIC = user.replace(/\D/g, '').length === 13 ? user.replace(/\D/g, '').slice(0,5)+'-'+user.replace(/\D/g, '').slice(5,12)+'-'+user.replace(/\D/g, '').slice(12,13) : '';
+                            imported.push({
+                                id: generateUUID(), portal_type: 'FBR', tax_year: '2026', atl_status: 'Active',
+                                full_name: cleanCNIC ? 'Client (' + cleanCNIC + ')' : user, phone: '', email: '', cnic: cleanCNIC, ntn: '',
+                                referred_by: 'Excel Import', fee_agreed: 0, fee_received: 0, tax_portal_password_encrypted: encryptText(pass),
+                                payment_status: 'Unpaid', contact_status: 'Not Contacted', notes: 'Imported'
+                            });
                         }
                     }
                 });
 
-                if (importedBatch.length > 0) {
-                    clientsData = [...importedBatch, ...clientsData];
+                if (imported.length > 0) {
+                    clientsData = [...imported, ...clientsData];
                     localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
-                    localStorage.removeItem('aqib_vault_wiped');
                     updateCombinedFinancials();
                     filterClients();
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Import Successful!',
-                        text: `Successfully imported ${importedBatch.length} credentials! Click Sync ➔ Upload to Cloud to send them to your phone!`,
-                        confirmButtonColor: '#059669'
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Import Failed',
-                        text: 'Could not read client records from the selected CSV file.'
-                    });
+                    try { await db.from('clients').insert(imported); } catch(err) {}
+                    Swal.fire({ icon: 'success', title: 'Import Complete!', text: `Imported ${imported.length} records!` });
                 }
-
                 e.target.value = '';
             };
-
             reader.readAsText(file);
         }
 
-        // STRICT INPUT FORMATTERS
-        function formatCNIC(input) {
-            let v = input.value.replace(/\D/g, '');
-            if (v.length > 5 && v.length <= 12) v = v.slice(0,5) + '-' + v.slice(5);
-            else if (v.length > 12) v = v.slice(0,5) + '-' + v.slice(5,12) + '-' + v.slice(12,13);
-            input.value = v;
-        }
-
-        function formatPhone(input) {
-            let v = input.value.replace(/\D/g, '');
-            if (v.length > 11) v = v.slice(0, 11);
-            input.value = v;
-        }
-
-        function formatNTN(input) {
-            let v = input.value.replace(/\D/g, '');
-            if (v.length > 7) v = v.slice(0, 7);
-            input.value = v;
-        }
+        // Form Limiters & Formatters
+        function formatCNIC(input) { let v = input.value.replace(/\D/g, ''); if (v.length > 5 && v.length <= 12) v = v.slice(0,5)+'-'+v.slice(5); else if (v.length > 12) v = v.slice(0,5)+'-'+v.slice(5,12)+'-'+v.slice(12,13); input.value = v; }
+        function formatPhone(input) { let v = input.value.replace(/\D/g, ''); if (v.length > 11) v = v.slice(0, 11); input.value = v; }
+        function formatNTN(input) { let v = input.value.replace(/\D/g, ''); if (v.length > 7) v = v.slice(0, 7); input.value = v; }
 
         function changePIN() {
-            Swal.fire({
-                title: 'Change Security PIN',
-                text: 'Enter your Current PIN:',
-                input: 'password',
-                inputAttributes: { maxlength: 4 },
-                inputPlaceholder: '••••',
-                showCancelButton: true,
-                confirmButtonText: 'Next',
-                confirmButtonColor: '#059669'
-            }).then((res) => {
-                if (res.isConfirmed) {
-                    if (res.value === APP_PIN) {
-                        Swal.fire({
-                            title: 'New 4-Digit PIN',
-                            text: 'Enter your NEW 4-digit PIN:',
-                            input: 'password',
-                            inputAttributes: { maxlength: 4 },
-                            inputPlaceholder: '••••',
-                            showCancelButton: true,
-                            confirmButtonText: 'Save New PIN',
-                            confirmButtonColor: '#059669'
-                        }).then((newRes) => {
-                            if (newRes.isConfirmed && newRes.value && newRes.value.length === 4) {
-                                APP_PIN = newRes.value;
-                                localStorage.setItem('aqib_app_pin', newRes.value);
-                                Swal.fire({ icon: 'success', title: 'PIN Updated!', text: 'Your security PIN has been successfully changed.' });
-                            } else if (newRes.isConfirmed) {
-                                Swal.fire({ icon: 'error', title: 'Invalid PIN', text: 'PIN must be exactly 4 digits long.' });
-                            }
-                        });
-                    } else {
-                        Swal.fire({ icon: 'error', title: 'Incorrect PIN', text: 'Current PIN was incorrect.' });
-                    }
+            Swal.fire({ title: 'Enter Current PIN:', input: 'password', showCancelButton: true }).then((res) => {
+                if (res.isConfirmed && res.value === APP_PIN) {
+                    Swal.fire({ title: 'Enter NEW 4-Digit PIN:', input: 'password', inputAttributes: { maxlength: 4 }, showCancelButton: true }).then((newRes) => {
+                        if (newRes.isConfirmed && newRes.value.length === 4) {
+                            APP_PIN = newRes.value;
+                            localStorage.setItem('aqib_app_pin', newRes.value);
+                            Swal.fire({ icon: 'success', title: 'PIN Updated!' });
+                        }
+                    });
                 }
             });
         }
 
         function togglePortalFields() {
-            const portal = document.getElementById('portalType').value;
-            const portalWrap = document.getElementById('wrapperPortalType');
-            const taxYearWrap = document.getElementById('wrapperTaxYear');
-            const fullNameWrap = document.getElementById('wrapperFullName');
-            const atlWrap = document.getElementById('wrapperAtlStatus');
-            const cnicNtnRow = document.getElementById('rowCnicNtn');
-            const passwordWrap = document.getElementById('wrapperTaxPassword');
-
-            if (portal === 'GTE') {
-                portalWrap.className = "col-span-1 sm:col-span-2";
-                taxYearWrap.classList.add('hidden');
-                fullNameWrap.className = "col-span-1 sm:col-span-2";
-                atlWrap.classList.add('hidden');
-                cnicNtnRow.classList.add('hidden');
-                passwordWrap.classList.add('hidden');
-            } else {
-                portalWrap.className = "col-span-1";
-                taxYearWrap.classList.remove('hidden');
-                fullNameWrap.className = "col-span-1";
-                atlWrap.classList.remove('hidden');
-                cnicNtnRow.classList.remove('hidden');
-                passwordWrap.classList.remove('hidden');
-            }
+            const isGTE = document.getElementById('portalType').value === 'GTE';
+            document.getElementById('wrapperTaxYear').classList.toggle('hidden', isGTE);
+            document.getElementById('wrapperAtlStatus').classList.toggle('hidden', isGTE);
+            document.getElementById('rowCnicNtn').classList.toggle('hidden', isGTE);
+            document.getElementById('wrapperTaxPassword').classList.toggle('hidden', isGTE);
         }
 
-        function lockApp() {
-            document.getElementById('pinInput').value = '';
-            document.getElementById('pinLockOverlay').classList.remove('hidden');
-        }
-        function unlockApp() {
-            const pin = document.getElementById('pinInput').value;
-            if (pin === APP_PIN) {
-                document.getElementById('pinLockOverlay').classList.add('hidden');
-            } else {
-                Swal.fire({ icon: 'error', title: 'Incorrect PIN', text: 'Please enter the correct 4-digit PIN.' });
-            }
-        }
+        function lockApp() { document.getElementById('pinInput').value = ''; document.getElementById('pinLockOverlay').classList.remove('hidden'); }
+        function unlockApp() { if (document.getElementById('pinInput').value === APP_PIN) document.getElementById('pinLockOverlay').classList.add('hidden'); else Swal.fire({ icon: 'error', title: 'Incorrect PIN' }); }
 
-        // BULLETPROOF ID-BASED WHATSAPP ENGINE
+        // WhatsApp Messaging
         function openWhatsApp(id) {
             const c = clientsData.find(x => x.id === id);
             if (!c) return;
-
-            let phone = c.phone || '';
-            if (!phone) {
-                Swal.fire({
-                    title: 'Phone Number Required',
-                    text: `Enter WhatsApp phone number for ${c.full_name}:`,
-                    input: 'text',
-                    inputPlaceholder: '03001234567',
-                    showCancelButton: true,
-                    confirmButtonText: 'Send WhatsApp',
-                    confirmButtonColor: '#059669'
-                }).then((res) => {
-                    if (res.isConfirmed && res.value) {
-                        c.phone = res.value;
-                        localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
-                        filterClients();
-                        launchWhatsAppModal(c);
-                    }
+            if (!c.phone) {
+                Swal.fire({ title: 'Enter Phone Number:', input: 'text', showCancelButton: true }).then((res) => {
+                    if (res.isConfirmed && res.value) { c.phone = res.value; localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData)); sendWA(c); }
                 });
                 return;
             }
-
-            launchWhatsAppModal(c);
+            sendWA(c);
         }
 
-        function launchWhatsAppModal(c) {
+        function sendWA(c) {
             let cleanPhone = c.phone.replace(/\D/g, '');
             if (cleanPhone.startsWith('0')) cleanPhone = '92' + cleanPhone.substring(1);
-
             const remaining = (parseFloat(c.fee_agreed) || 0) - (parseFloat(c.fee_received) || 0);
-            const clientName = c.full_name || 'Client';
-            const cnicNum = c.cnic || 'N/A';
-            const portalPass = decryptText(c.tax_portal_password_encrypted) || 'N/A';
 
             Swal.fire({
-                title: '📱 WhatsApp Message Options',
+                title: '📱 Select WhatsApp Format',
                 html: `
-                    <div class="text-left text-xs space-y-2 font-sans pt-2">
-                        <p class="text-slate-600 font-medium mb-2"><strong>${clientName}</strong> ko konsa message bhejna hai?</p>
-                        <select id="waMessageSelect" class="w-full p-3 rounded-xl border border-slate-300 text-xs bg-slate-50 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                            <option value="1">💰 1. Fee Balance Reminder</option>
-                            <option value="2">✅ 2. Filing Confirmation</option>
-                            <option value="3">🔑 3. Share Credentials (CNIC & Password)</option>
-                            <option value="4">📞 4. Call Request (Information Needed)</option>
-                            <option value="5">🟢 5. ATL Active Status Confirmation</option>
-                            <option value="6">⚠️ 6. FBR Notice Alert</option>
-                            <option value="7">📅 7. Tax Season 2026 Filing Invitation</option>
-                        </select>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: '<i class="fa-brands fa-whatsapp mr-1"></i> Send Message',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#059669',
-                cancelButtonColor: '#64748b'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const choice = document.getElementById('waMessageSelect').value;
+                    <select id="waSelect" class="w-full p-3 rounded-xl border text-xs bg-slate-50 font-medium">
+                        <option value="1">💰 1. Fee Balance Reminder</option>
+                        <option value="2">✅ 2. Filing Confirmation</option>
+                        <option value="3">🔑 3. Share Portal Credentials</option>
+                        <option value="4">📞 4. Call Request (Information Needed)</option>
+                        <option value="5">🟢 5. ATL Active Status Confirmation</option>
+                        <option value="6">⚠️ 6. FBR Notice Alert</option>
+                        <option value="7">📅 7. Tax Season 2026 Filing Invitation</option>
+                    </select>`,
+                showCancelButton: true, confirmButtonText: 'Send WhatsApp', confirmButtonColor: '#059669'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    const sel = document.getElementById('waSelect').value;
                     let msg = '';
-
-                    switch(choice) {
-                        case '1':
-                            msg = `Mohtaram ${clientName} Sahab, aap ki Tax Return file ho chuki hai. Aap ki baqi rehne wali fees Rs. ${remaining.toLocaleString()} hai. Baraye meherbani jald az jald adaigi mukammal karein. Shukriya! - Aqib Arain`;
-                            break;
-                        case '2':
-                            msg = `Mohtaram ${clientName} Sahab, Assalam-o-Alaikum! Aap ki Income Tax Return ba-aasan tariqay se successful file ho gayi hai. Aqib Arain shukriya!`;
-                            break;
-                        case '3':
-                            msg = `Mohtaram ${clientName} Sahab, aap ke Tax Portal ke login details yeh hain:\n\n📌 CNIC: ${cnicNum}\n🔑 Password: ${portalPass}\n\nIn details ko apne paas mehfooz rakhein. - Aqib Arain`;
-                            break;
-                        case '4':
-                            msg = `Mohtaram ${clientName} Sahab, aap ki Tax Return tayyar karne ke liye kuch malumat ke zarorat hay. Baraye meherbani jab ap free hon mujha call kejea ga taake kaam shuru kiya ja sakay. - Aqib Arain`;
-                            break;
-                        case '5':
-                            msg = `Mohtaram ${clientName} Sahab, Mubarak ho! FBR Active Taxpayer List (ATL) mein aap ka naam Active (🟢) ho chuka hai. Aap ab Active Filer hain. - Aqib Arain`;
-                            break;
-                        case '6':
-                            msg = `Mohtaram ${clientName} Sahab, FBR Portal par aap ke naam par ek Statutory Notice/Letter aya hai. Is ka wqt par jawab dena zaroori hai. Baraye meherbani jald az jald mujh say rabta karein. - Aqib Arain`;
-                            break;
-                        case '7':
-                            msg = `Mohtaram ${clientName} Sahab, Assalam-o-Alaikum! Tax Year 2026 ki Income Tax Returns filing shuru ho chuki hai. FBR ki late filing penalty (25000) se bachne ke liye aaj hi apni Return file karwayein. - Aqib Arain`;
-                            break;
-                    }
-
-                    if (msg) {
-                        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-                    }
+                    if (sel === '1') msg = `Mohtaram ${c.full_name} Sahab, aap ki Tax Return file ho chuki hai. Baqi fees Rs. ${remaining.toLocaleString()} hai. Baraye meherbani adaigi karein. Shukriya! - Aqib Arain`;
+                    if (sel === '2') msg = `Mohtaram ${c.full_name} Sahab, Assalam-o-Alaikum! Aap ki Income Tax Return successful file ho gayi hai. Aqib Arain shukriya!`;
+                    if (sel === '3') msg = `Mohtaram ${c.full_name} Sahab, Tax Portal Login details:\n📌 CNIC: ${c.cnic || 'N/A'}\n🔑 Password: ${decryptText(c.tax_portal_password_encrypted) || 'N/A'}\n- Aqib Arain`;
+                    if (sel === '4') msg = `Mohtaram ${c.full_name} Sahab, Tax Return ke liye kuch malumat ki zarorat hai. Free ho kar call karein. - Aqib Arain`;
+                    if (sel === '5') msg = `Mohtaram ${c.full_name} Sahab, Mubarak ho! FBR Active Taxpayer List (ATL) mein aap ka naam Active (🟢) ho chuka hai. - Aqib Arain`;
+                    if (sel === '6') msg = `Mohtaram ${c.full_name} Sahab, FBR Portal par Statutory Notice/Letter aya hai. Jald az jald rabta karein. - Aqib Arain`;
+                    if (sel === '7') msg = `Mohtaram ${c.full_name} Sahab, Tax Year 2026 Return filing shuru ho chuki hai. FBR penalty se bachne ke liye aaj hi file karwayein. - Aqib Arain`;
+                    if (msg) window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
                 }
             });
         }
@@ -877,70 +358,25 @@
         function autoCalculateFeeStatus() {
             const agreed = parseFloat(document.getElementById('feeAgreed').value) || 0;
             const received = parseFloat(document.getElementById('feeReceived').value) || 0;
-            const statusSelect = document.getElementById('paymentStatus');
-
-            if (received <= 0) statusSelect.value = 'Unpaid';
-            else if (received >= agreed && agreed > 0) statusSelect.value = 'Paid';
-            else statusSelect.value = 'Partial';
+            const sel = document.getElementById('paymentStatus');
+            if (received <= 0) sel.value = 'Unpaid'; else if (received >= agreed && agreed > 0) sel.value = 'Paid'; else sel.value = 'Partial';
         }
 
-        // LOAD CLIENTS FROM LOCAL STORAGE
         function loadClientsData() {
             const cached = localStorage.getItem('aqib_clients_cache');
-            const isWiped = localStorage.getItem('aqib_vault_wiped');
-
-            if (cached) {
-                try {
-                    clientsData = JSON.parse(cached);
-                } catch(e) {
-                    clientsData = [];
-                }
-            } else if (!isWiped) {
-                clientsData = [
-                    {
-                        id: generateUUID(),
-                        portal_type: 'FBR',
-                        tax_year: '2026',
-                        atl_status: 'Active',
-                        full_name: 'Muhammad Ali (Sample Client)',
-                        phone: '03001234567',
-                        email: 'ali@example.com',
-                        cnic: '35201-1234567-1',
-                        ntn: '7654321',
-                        referred_by: 'Self',
-                        fee_agreed: 5000,
-                        fee_received: 3000,
-                        tax_portal_password_encrypted: encryptText('Pass1234'),
-                        payment_status: 'Partial',
-                        contact_status: 'Contacted',
-                        notes: 'This is a sample record. You can edit or delete it.'
-                    }
-                ];
-                localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
-            } else {
-                clientsData = [];
-            }
-
+            if (cached) { try { clientsData = JSON.parse(cached); } catch(e) { clientsData = []; } }
             updateCombinedFinancials();
             filterClients();
+            syncCloud(false);
         }
 
         function updateCombinedFinancials() {
-            let totalAgreed = 0;
-            let totalReceived = 0;
-
-            clientsData.forEach(c => {
-                totalAgreed += parseFloat(c.fee_agreed || 0);
-                totalReceived += parseFloat(c.fee_received || 0);
-            });
-
-            const totalRemaining = totalAgreed - totalReceived;
-
+            let totalAgreed = 0, totalReceived = 0;
+            clientsData.forEach(c => { totalAgreed += parseFloat(c.fee_agreed || 0); totalReceived += parseFloat(c.fee_received || 0); });
             document.getElementById('statAgreed').innerText = `Rs. ${totalAgreed.toLocaleString()}`;
             document.getElementById('statReceived').innerText = `Rs. ${totalReceived.toLocaleString()}`;
-            document.getElementById('statRemaining').innerText = `Rs. ${totalRemaining.toLocaleString()}`;
+            document.getElementById('statRemaining').innerText = `Rs. ${(totalAgreed - totalReceived).toLocaleString()}`;
             document.getElementById('statTotalClients').innerText = clientsData.length;
-
             document.getElementById('badgeALL').innerText = clientsData.length;
             document.getElementById('badgeFBR').innerText = clientsData.filter(c => (c.portal_type || 'FBR') === 'FBR').length;
             document.getElementById('badgeGTE').innerText = clientsData.filter(c => c.portal_type === 'GTE').length;
@@ -948,448 +384,157 @@
 
         function switchPortalTab(tab) {
             activeTab = tab;
-            ['ALL', 'FBR', 'GTE'].forEach(t => {
-                const btn = document.getElementById(`tab${t}`);
-                if (t === tab) {
-                    btn.className = "px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 bg-white text-slate-900 font-bold shadow-sm whitespace-nowrap";
-                } else {
-                    btn.className = "px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl transition flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 whitespace-nowrap";
-                }
-            });
+            ['ALL', 'FBR', 'GTE'].forEach(t => { document.getElementById(`tab${t}`).className = t === tab ? "px-4 py-2 rounded-xl bg-white text-slate-900 font-bold shadow-sm whitespace-nowrap" : "px-4 py-2 rounded-xl text-slate-600 whitespace-nowrap"; });
             filterClients();
         }
 
         function filterClients() {
-            const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
-            const payF = document.getElementById('paymentFilter')?.value || 'ALL';
-            const conF = document.getElementById('contactFilter')?.value || 'ALL';
+            const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
             const yearF = document.getElementById('yearFilter')?.value || 'ALL';
             const atlF = document.getElementById('atlFilter')?.value || 'ALL';
 
             const filtered = clientsData.filter(c => {
                 const portal = c.portal_type || 'FBR';
                 const matchTab = activeTab === 'ALL' || portal === activeTab;
-
-                const name = (c.full_name || '').toLowerCase();
-                const phone = c.phone || '';
-                const cnic = c.cnic || '';
-                const ntn = (c.ntn || '').toLowerCase();
-                const ref = (c.referred_by || '').toLowerCase();
-
-                const matchSearch = name.includes(query) || phone.includes(query) || cnic.includes(query) || ntn.includes(query) || ref.includes(query);
-                const matchPay = payF === 'ALL' || c.payment_status === payF;
-                const matchCon = conF === 'ALL' || c.contact_status === conF;
-                
+                const matchSearch = (c.full_name || '').toLowerCase().includes(q) || (c.phone || '').includes(q) || (c.cnic || '').includes(q) || (c.ntn || '').toLowerCase().includes(q) || (c.referred_by || '').toLowerCase().includes(q);
                 const matchYear = yearF === 'ALL' || portal === 'GTE' || (c.tax_year || '2026') === yearF;
                 const matchATL = atlF === 'ALL' || portal === 'GTE' || (c.atl_status || 'Active') === atlF;
-
-                return matchTab && matchSearch && matchPay && matchCon && matchYear && matchATL;
+                return matchTab && matchSearch && matchYear && matchATL;
             });
-
-            renderClientsResponsive(filtered);
+            renderClients(filtered);
         }
 
-        function renderClientsResponsive(list) {
+        function renderClients(list) {
             const tbody = document.getElementById('clientTableBody');
             const mobileContainer = document.getElementById('mobileCardsContainer');
-            
-            tbody.innerHTML = '';
-            mobileContainer.innerHTML = '';
+            tbody.innerHTML = ''; mobileContainer.innerHTML = '';
 
             if (list.length === 0) {
-                const emptyHTML = `
-                    <div class="text-center py-12 text-slate-400 font-medium executive-card rounded-2xl p-6">
-                        <i class="fa-solid fa-folder-open text-4xl mb-3 block text-slate-300"></i>
-                        <p class="text-slate-600 font-bold text-sm">Vault is Empty.</p>
-                        <p class="text-xs text-slate-400 mt-1 mb-4">Click "Import" to upload your Google Password CSV file.</p>
-                        <button onclick="triggerCSVImport()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-md transition inline-flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-import"></i> Import Google Passwords
-                        </button>
-                    </div>`;
-                
+                const emptyHTML = `<div class="text-center py-12 text-slate-400 font-medium card rounded-2xl p-6"><i class="fa-solid fa-folder-open text-4xl mb-2 block"></i>No clients found. Click "Import" to upload credentials.</div>`;
                 tbody.innerHTML = `<tr><td colspan="6" class="p-0">${emptyHTML}</td></tr>`;
                 mobileContainer.innerHTML = emptyHTML;
                 return;
             }
 
             list.forEach(c => {
-                const cid = c.id || generateUUID();
-                c.id = cid;
+                const cid = c.id || generateUUID(); c.id = cid;
                 const decPass = decryptText(c.tax_portal_password_encrypted);
-                const displayName = c.full_name || 'Unnamed Client';
-                const portal = c.portal_type || 'FBR';
-                const year = c.tax_year || '2026';
-                const atl = c.atl_status || 'Active';
-                const agreed = parseFloat(c.fee_agreed || 0);
-                const received = parseFloat(c.fee_received || 0);
-                const remaining = agreed - received;
+                const agreed = parseFloat(c.fee_agreed || 0), received = parseFloat(c.fee_received || 0), remaining = agreed - received;
 
-                let payBadgeClass = "bg-rose-50 text-rose-700 border-rose-200";
-                if (c.payment_status === 'Paid') { payBadgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200"; }
-                if (c.payment_status === 'Partial') { payBadgeClass = "bg-amber-50 text-amber-700 border-amber-200"; }
-
-                // 1. DESKTOP TABLE ROW
+                // Laptop Row
                 const tr = document.createElement('tr');
-                tr.className = "transition";
                 tr.innerHTML = `
-                    <td class="py-3.5 px-4 align-top">
-                        <div class="flex items-center gap-1.5">
-                            <span class="px-2 py-0.5 text-[10px] font-black rounded ${portal === 'FBR' ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-indigo-800'}">${portal}</span>
-                            ${portal === 'FBR' ? `<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-50 text-blue-700">TY ${year}</span>` : ''}
-                        </div>
-                        ${portal === 'FBR' ? `
-                            <div class="mt-1 text-[11px] font-semibold ${atl === 'Active' ? 'text-emerald-700' : 'text-rose-600'}">
-                                ${atl === 'Active' ? '🟢 ATL Active' : '🔴 Inactive'}
-                            </div>
-                        ` : '<div class="mt-1 text-[11px] text-slate-400 font-medium">GTE Service</div>'}
-                    </td>
-
-                    <td class="py-3.5 px-4 align-top">
-                        <div class="font-extrabold text-slate-900 text-sm">${displayName}</div>
-                        <div class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                            <span><i class="fa-solid fa-phone text-slate-400"></i> ${c.phone || '-'}</span>
-                            <button onclick="openWhatsApp('${cid}')" class="text-emerald-600 hover:text-emerald-800 text-sm" title="Direct WhatsApp"><i class="fa-brands fa-whatsapp font-bold"></i></button>
-                        </div>
-                        ${c.referred_by ? `<div class="mt-1 text-[11px] text-indigo-600 font-medium"><i class="fa-solid fa-user-tag text-[10px] mr-1"></i>Ref: ${c.referred_by}</div>` : ''}
-                    </td>
-
-                    <td class="py-3.5 px-4 align-top font-mono text-xs">
-                        <div class="text-slate-800 font-bold"><span class="text-slate-400 font-sans text-[10px]">CNIC:</span> ${c.cnic || '-'}</div>
-                        <div class="text-slate-600"><span class="text-slate-400 font-sans text-[10px]">NTN:</span> ${c.ntn || '-'}</div>
-                    </td>
-
-                    <td class="py-3.5 px-4 align-top text-xs">
-                        <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 text-[10px] font-bold border rounded-full ${payBadgeClass}">${c.payment_status || 'Unpaid'}</span>
-                            <span class="text-[10px] text-slate-400">${c.contact_status || 'Not Contacted'}</span>
-                        </div>
-                        <div class="mt-1 text-[11px]">
-                            <span class="text-slate-500">Agreed: <strong>Rs. ${agreed.toLocaleString()}</strong></span> | 
-                            <span class="text-emerald-700 font-bold">Rec: Rs. ${received.toLocaleString()}</span>
-                            ${remaining > 0 ? `<span class="text-rose-600 font-bold ml-1">(Rem: ${remaining.toLocaleString()})</span>` : ''}
-                        </div>
-                    </td>
-
-                    <td class="py-3.5 px-4 align-top font-mono text-xs">
-                        <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-xl w-fit">
-                            <span id="pass-${cid}" class="text-slate-900 font-bold tracking-wider">${decPass ? '••••••••' : '-'}</span>
-                            ${decPass ? `
-                                <button onclick="togglePassword('${cid}')" class="text-slate-400 hover:text-slate-700"><i id="eye-${cid}" class="fa-solid fa-eye text-xs"></i></button>
-                                <button onclick="copyPassword('${cid}')" class="text-emerald-600 hover:text-emerald-800"><i class="fa-regular fa-copy text-xs"></i></button>
-                            ` : ''}
-                        </div>
-                    </td>
-
-                    <td class="py-3.5 px-4 align-top text-right space-x-2 text-xs">
-                        <button onclick="editClient('${cid}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-blue-700 font-bold rounded-lg transition"><i class="fa-solid fa-pen"></i> Edit</button>
-                        <button onclick="deleteClient('${cid}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
-                    </td>
+                    <td class="py-3 px-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded ${c.portal_type === 'GTE' ? 'bg-indigo-100 text-indigo-800' : 'bg-emerald-100 text-emerald-800'}">${c.portal_type || 'FBR'}</span> ${c.portal_type === 'FBR' ? `<span class="text-[10px] font-bold text-blue-700 ml-1">TY ${c.tax_year || '2026'}</span>` : ''}</td>
+                    <td class="py-3 px-4"><div class="font-bold text-slate-900">${c.full_name || 'Unnamed'}</div><div class="text-slate-500 text-xs"><i class="fa-solid fa-phone mr-1"></i>${c.phone || '-'} <button onclick="openWhatsApp('${cid}')" class="text-emerald-600 font-bold ml-1"><i class="fa-brands fa-whatsapp"></i></button></div>${c.referred_by ? `<div class="text-[10px] text-indigo-600 font-medium">Ref: ${c.referred_by}</div>` : ''}</td>
+                    <td class="py-3 px-4 font-mono text-xs">CNIC: ${c.cnic || '-'}<br>NTN: ${c.ntn || '-'}</td>
+                    <td class="py-3 px-4 text-xs"><span class="font-bold text-slate-700">Rs. ${agreed.toLocaleString()}</span> (Rec: ${received.toLocaleString()})</td>
+                    <td class="py-3 px-4 font-mono text-xs"><span id="pass-${cid}">••••••••</span> ${decPass ? `<button onclick="togglePassword('${cid}')" class="ml-1 text-slate-400"><i id="eye-${cid}" class="fa-solid fa-eye"></i></button>` : ''}</td>
+                    <td class="py-3 px-4 text-right space-x-2"><button onclick="editClient('${cid}')" class="text-blue-600 font-bold"><i class="fa-solid fa-pen"></i></button><button onclick="deleteClient('${cid}')" class="text-rose-600 font-bold"><i class="fa-solid fa-trash"></i></button></td>
                 `;
                 tbody.appendChild(tr);
 
-                // 2. MOBILE TOUCH CARD
+                // Mobile Card
                 const mCard = document.createElement('div');
-                mCard.className = "executive-card p-4 rounded-2xl space-y-3 relative";
+                mCard.className = "card p-4 rounded-2xl space-y-2 text-xs";
                 mCard.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
-                            <div class="flex items-center gap-1.5 mb-1">
-                                <span class="px-2 py-0.5 text-[9px] font-black rounded ${portal === 'FBR' ? 'bg-emerald-100 text-emerald-800' : 'bg-indigo-100 text-indigo-800'}">${portal}</span>
-                                ${portal === 'FBR' ? `<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-blue-50 text-blue-700">TY ${year}</span>` : ''}
-                                ${portal === 'FBR' ? `<span class="px-2 py-0.5 text-[9px] font-bold rounded ${atl === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">${atl === 'Active' ? '🟢 ATL' : '🔴 Inactive'}</span>` : ''}
-                            </div>
-                            <h3 class="font-extrabold text-slate-900 text-base">${displayName}</h3>
-                            <div class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                                <span><i class="fa-solid fa-phone text-slate-400"></i> ${c.phone || '-'}</span>
-                                <button onclick="openWhatsApp('${cid}')" class="text-emerald-600 font-bold text-sm"><i class="fa-brands fa-whatsapp font-bold"></i></button>
-                            </div>
-                            ${c.referred_by ? `<div class="text-[11px] text-indigo-600 font-medium mt-0.5"><i class="fa-solid fa-user-tag text-[9px] mr-1"></i>Ref: ${c.referred_by}</div>` : ''}
+                            <span class="px-2 py-0.5 text-[9px] font-bold rounded ${c.portal_type === 'GTE' ? 'bg-indigo-100 text-indigo-800' : 'bg-emerald-100 text-emerald-800'}">${c.portal_type || 'FBR'}</span>
+                            <h3 class="font-bold text-slate-900 text-sm mt-1">${c.full_name || 'Unnamed'}</h3>
+                            <div class="text-slate-500"><i class="fa-solid fa-phone mr-1"></i>${c.phone || '-'} <button onclick="openWhatsApp('${cid}')" class="text-emerald-600 font-bold ml-1"><i class="fa-brands fa-whatsapp"></i></button></div>
+                            ${c.referred_by ? `<div class="text-[10px] text-indigo-600 font-medium">Ref: ${c.referred_by}</div>` : ''}
                         </div>
-                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${payBadgeClass}">${c.payment_status || 'Unpaid'}</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${c.payment_status === 'Paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}">${c.payment_status || 'Unpaid'}</span>
                     </div>
-
-                    <!-- Financial Summary -->
-                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs flex justify-between">
-                        <div><span class="text-slate-400">Agreed:</span> <strong>Rs. ${agreed.toLocaleString()}</strong></div>
-                        <div><span class="text-emerald-600 font-semibold">Rec:</span> <strong class="text-emerald-700">Rs. ${received.toLocaleString()}</strong></div>
-                        <div><span class="text-rose-500">Rem:</span> <strong class="text-rose-600">Rs. ${remaining.toLocaleString()}</strong></div>
+                    <div class="bg-slate-50 p-2 rounded-xl flex justify-between">
+                        <span>Agreed: <strong>Rs. ${agreed.toLocaleString()}</strong></span>
+                        <span>Rec: <strong class="text-emerald-700">Rs. ${received.toLocaleString()}</strong></span>
                     </div>
-
-                    <!-- CNIC / Password Box -->
-                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs space-y-1 font-mono">
-                        ${c.cnic ? `<div class="flex justify-between"><span class="text-slate-400 font-sans">CNIC:</span> <strong>${c.cnic}</strong></div>` : ''}
-                        ${c.ntn ? `<div class="flex justify-between"><span class="text-slate-400 font-sans">NTN:</span> <strong>${c.ntn}</strong></div>` : ''}
-                        ${decPass ? `
-                            <div class="flex justify-between items-center pt-1 border-t border-slate-200">
-                                <span class="text-slate-400 font-sans">Pass:</span>
-                                <div class="flex items-center space-x-2">
-                                    <span id="mpass-${cid}" class="text-slate-900 font-bold tracking-wider">••••••••</span>
-                                    <button onclick="togglePassword('${cid}')" class="text-slate-400"><i id="meye-${cid}" class="fa-solid fa-eye text-xs"></i></button>
-                                    <button onclick="copyPassword('${cid}')" class="text-emerald-600"><i class="fa-regular fa-copy text-xs"></i></button>
-                                </div>
-                            </div>
-                        ` : ''}
+                    <div class="bg-slate-50 p-2 rounded-xl space-y-1 font-mono">
+                        ${c.cnic ? `<div>CNIC: <strong>${c.cnic}</strong></div>` : ''}
+                        ${decPass ? `<div class="flex justify-between items-center"><span>Pass: <strong id="mpass-${cid}">••••••••</strong></span><div><button onclick="togglePassword('${cid}')" class="text-slate-400 mr-2"><i id="meye-${cid}" class="fa-solid fa-eye"></i></button><button onclick="copyPassword('${cid}')" class="text-emerald-600"><i class="fa-regular fa-copy"></i></button></div></div>` : ''}
                     </div>
-
-                    <div class="flex justify-end items-center gap-2 pt-1 border-t border-slate-100 text-xs">
-                        <button onclick="editClient('${cid}')" class="px-3 py-1.5 bg-slate-100 text-blue-700 font-bold rounded-lg"><i class="fa-solid fa-pen mr-1"></i> Edit</button>
-                        <button onclick="deleteClient('${cid}')" class="px-3 py-1.5 bg-rose-50 text-rose-700 font-bold rounded-lg"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
-                    </div>
-                `;
+                    <div class="flex justify-end gap-2 pt-1 border-t">
+                        <button onclick="editClient('${cid}')" class="px-2.5 py-1 bg-slate-100 text-blue-700 font-bold rounded-lg"><i class="fa-solid fa-pen mr-1"></i>Edit</button>
+                        <button onclick="deleteClient('${cid}')" class="px-2.5 py-1 bg-rose-50 text-rose-700 font-bold rounded-lg"><i class="fa-solid fa-trash mr-1"></i>Delete</button>
+                    </div>`;
                 mobileContainer.appendChild(mCard);
             });
         }
 
         function togglePassword(id) {
-            const c = clientsData.find(x => x.id === id);
-            if (!c) return;
-            const rawPassword = decryptText(c.tax_portal_password_encrypted);
-
-            const elDesktop = document.getElementById(`pass-${id}`);
-            const iconDesktop = document.getElementById(`eye-${id}`);
-            const elMobile = document.getElementById(`mpass-${id}`);
-            const iconMobile = document.getElementById(`meye-${id}`);
-
-            if (elDesktop) {
-                if (elDesktop.innerText === '••••••••') {
-                    elDesktop.innerText = rawPassword;
-                    if (iconDesktop) iconDesktop.className = 'fa-solid fa-eye-slash text-xs';
-                } else {
-                    elDesktop.innerText = '••••••••';
-                    if (iconDesktop) iconDesktop.className = 'fa-solid fa-eye text-xs';
-                }
-            }
-
-            if (elMobile) {
-                if (elMobile.innerText === '••••••••') {
-                    elMobile.innerText = rawPassword;
-                    if (iconMobile) iconMobile.className = 'fa-solid fa-eye-slash text-xs';
-                } else {
-                    elMobile.innerText = '••••••••';
-                    if (iconMobile) iconMobile.className = 'fa-solid fa-eye text-xs';
-                }
-            }
+            const c = clientsData.find(x => x.id === id); if (!c) return;
+            const pass = decryptText(c.tax_portal_password_encrypted);
+            ['pass-', 'mpass-'].forEach(p => { const el = document.getElementById(p + id); if (el) el.innerText = el.innerText === '••••••••' ? pass : '••••••••'; });
         }
 
         function copyPassword(id) {
-            const c = clientsData.find(x => x.id === id);
-            if (!c) return;
-            const pass = decryptText(c.tax_portal_password_encrypted);
-            if (pass) {
-                navigator.clipboard.writeText(pass);
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Password Copied!', showConfirmButton: false, timer: 1500 });
-            }
+            const c = clientsData.find(x => x.id === id); if (!c) return;
+            navigator.clipboard.writeText(decryptText(c.tax_portal_password_encrypted));
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Copied!', timer: 1500, showConfirmButton: false });
         }
 
         async function saveClient(e) {
             e.preventDefault();
             const id = document.getElementById('clientId').value;
-            const passVal = document.getElementById('taxPassword').value;
             const portalVal = document.getElementById('portalType').value;
+            const passVal = document.getElementById('taxPassword').value;
 
             const payload = {
-                portal_type: portalVal,
+                id: id || generateUUID(), portal_type: portalVal,
                 tax_year: portalVal === 'FBR' ? document.getElementById('taxYear').value : 'N/A',
                 atl_status: portalVal === 'FBR' ? document.getElementById('atlStatus').value : 'N/A',
                 full_name: document.getElementById('fullName').value || 'Unnamed Client',
-                phone: document.getElementById('phone').value || '',
-                email: document.getElementById('email').value || '',
-                cnic: portalVal === 'FBR' ? (document.getElementById('cnic').value || '') : '',
-                ntn: portalVal === 'FBR' ? (document.getElementById('ntn').value || '') : '',
+                phone: document.getElementById('phone').value || '', email: document.getElementById('email').value || '',
+                cnic: portalVal === 'FBR' ? document.getElementById('cnic').value : '', ntn: portalVal === 'FBR' ? document.getElementById('ntn').value : '',
                 referred_by: document.getElementById('referredBy').value || '',
-                fee_agreed: parseFloat(document.getElementById('feeAgreed').value) || 0,
-                fee_received: parseFloat(document.getElementById('feeReceived').value) || 0,
+                fee_agreed: parseFloat(document.getElementById('feeAgreed').value) || 0, fee_received: parseFloat(document.getElementById('feeReceived').value) || 0,
                 tax_portal_password_encrypted: (portalVal === 'FBR' && passVal) ? encryptText(passVal) : '',
-                payment_status: document.getElementById('paymentStatus').value,
-                contact_status: document.getElementById('contactStatus').value,
-                notes: document.getElementById('notes').value || '',
-                id: id || generateUUID()
+                payment_status: document.getElementById('paymentStatus').value, contact_status: document.getElementById('contactStatus').value,
+                notes: document.getElementById('notes').value || ''
             };
 
-            if (id) {
-                const idx = clientsData.findIndex(x => x.id === id);
-                if (idx !== -1) clientsData[idx] = payload;
-            } else {
-                clientsData.unshift(payload);
-            }
+            if (id) { const idx = clientsData.findIndex(x => x.id === id); if (idx !== -1) clientsData[idx] = payload; } else clientsData.unshift(payload);
             localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
-            localStorage.removeItem('aqib_vault_wiped');
-            updateCombinedFinancials();
-            filterClients();
-            closeClientModal();
-
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved Successfully!', showConfirmButton: false, timer: 1500 });
+            updateCombinedFinancials(); filterClients(); closeClientModal();
+            try { await db.from('clients').upsert(payload); } catch(e) {}
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved!', timer: 1500, showConfirmButton: false });
         }
 
         function editClient(id) {
-            const c = clientsData.find(x => x.id === id);
-            if (!c) return;
+            const c = clientsData.find(x => x.id === id); if (!c) return;
             document.getElementById('clientId').value = c.id;
-            document.getElementById('portalType').value = c.portal_type || 'FBR';
-            
-            togglePortalFields();
-
-            document.getElementById('taxYear').value = c.tax_year || '2026';
-            document.getElementById('atlStatus').value = c.atl_status || 'Active';
-            document.getElementById('fullName').value = c.full_name || '';
-            document.getElementById('phone').value = c.phone || '';
-            document.getElementById('email').value = c.email || '';
-            document.getElementById('cnic').value = c.cnic || '';
-            document.getElementById('ntn').value = c.ntn || '';
-            document.getElementById('referredBy').value = c.referred_by || '';
-            document.getElementById('feeAgreed').value = c.fee_agreed || 0;
-            document.getElementById('feeReceived').value = c.fee_received || 0;
+            document.getElementById('portalType').value = c.portal_type || 'FBR'; togglePortalFields();
+            document.getElementById('taxYear').value = c.tax_year || '2026'; document.getElementById('atlStatus').value = c.atl_status || 'Active';
+            document.getElementById('fullName').value = c.full_name || ''; document.getElementById('phone').value = c.phone || '';
+            document.getElementById('email').value = c.email || ''; document.getElementById('cnic').value = c.cnic || '';
+            document.getElementById('ntn').value = c.ntn || ''; document.getElementById('referredBy').value = c.referred_by || '';
+            document.getElementById('feeAgreed').value = c.fee_agreed || 0; document.getElementById('feeReceived').value = c.fee_received || 0;
             document.getElementById('taxPassword').value = decryptText(c.tax_portal_password_encrypted);
-            document.getElementById('paymentStatus').value = c.payment_status || 'Unpaid';
-            document.getElementById('contactStatus').value = c.contact_status || 'Not Contacted';
+            document.getElementById('paymentStatus').value = c.payment_status || 'Unpaid'; document.getElementById('contactStatus').value = c.contact_status || 'Not Contacted';
             document.getElementById('notes').value = c.notes || '';
-            document.getElementById('modalTitle').innerText = "Edit Client Record";
             document.getElementById('clientModal').classList.remove('hidden');
         }
 
         async function deleteClient(id) {
-            const result = await Swal.fire({
-                title: 'Delete Client Record?',
-                text: "This action cannot be undone!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#e11d48',
-                confirmButtonText: 'Delete'
-            });
-
-            if (result.isConfirmed) {
+            const confirm = await Swal.fire({ title: 'Delete Client?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48' });
+            if (confirm.isConfirmed) {
                 clientsData = clientsData.filter(x => x.id !== id);
                 localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
-                updateCombinedFinancials();
-                filterClients();
+                updateCombinedFinancials(); filterClients();
+                try { await db.from('clients').delete().eq('id', id); } catch(e) {}
             }
         }
 
-        function openClientModal() {
-            document.getElementById('clientForm').reset();
-            document.getElementById('clientId').value = '';
-            document.getElementById('portalType').value = activeTab === 'GTE' ? 'GTE' : 'FBR';
-            document.getElementById('taxYear').value = '2026';
-            
-            togglePortalFields();
-
-            document.getElementById('modalTitle').innerText = "Add Client Record";
-            document.getElementById('clientModal').classList.remove('hidden');
-        }
+        function openClientModal() { document.getElementById('clientForm').reset(); document.getElementById('clientId').value = ''; togglePortalFields(); document.getElementById('clientModal').classList.remove('hidden'); }
         function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
 
-        function generateCSVContent() {
-            let csv = "Portal,Tax Year,ATL Status,Full Name,Phone,Email,CNIC,NTN,Referred By,Fee Agreed,Fee Received,Remaining Fee,Tax Password,Payment Status,Contact Status,Notes\n";
-            clientsData.forEach(c => {
-                const agreed = parseFloat(c.fee_agreed || 0);
-                const received = parseFloat(c.fee_received || 0);
-                const remaining = agreed - received;
-                csv += `"${c.portal_type || 'FBR'}","${c.tax_year || '2026'}","${c.atl_status || 'Active'}","${c.full_name || ''}","${c.phone || ''}","${c.email || ''}","${c.cnic || ''}","${c.ntn || ''}","${c.referred_by || ''}","${agreed}","${received}","${remaining}","${decryptText(c.tax_portal_password_encrypted)}","${c.payment_status || ''}","${c.contact_status || ''}","${c.notes || ''}"\n`;
-            });
-            return csv;
-        }
-
         function exportToCSV() {
-            const csv = generateCSVContent();
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `Aqib_Arain_Tax_Vault_Backup_${new Date().toISOString().slice(0,10)}.csv`);
-            a.click();
+            let csv = "Portal,Tax Year,ATL Status,Full Name,Phone,Email,CNIC,NTN,Referred By,Fee Agreed,Fee Received,Tax Password,Notes\n";
+            clientsData.forEach(c => { csv += `"${c.portal_type}","${c.tax_year}","${c.atl_status}","${c.full_name}","${c.phone}","${c.email}","${c.cnic}","${c.ntn}","${c.referred_by}","${c.fee_agreed}","${c.fee_received}","${decryptText(c.tax_portal_password_encrypted)}","${c.notes}"\n`; });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `Tax_Vault_Backup_${new Date().toISOString().slice(0,10)}.csv`; a.click();
         }
 
-        // GOOGLE DRIVE AUTO SAVE ENGINE
-        function saveToGoogleDrive() {
-            let clientId = localStorage.getItem('aqib_google_client_id');
-
-            if (!clientId) {
-                Swal.fire({
-                    title: 'Google Drive Setup',
-                    text: 'Enter your Google OAuth Client ID to save directly to Drive (or click Download CSV):',
-                    input: 'text',
-                    inputPlaceholder: 'your-id.apps.googleusercontent.com',
-                    showCancelButton: true,
-                    confirmButtonText: 'Save ID & Upload',
-                    cancelButtonText: 'Download CSV Instead',
-                    confirmButtonColor: '#059669'
-                }).then((result) => {
-                    if (result.isConfirmed && result.value) {
-                        localStorage.setItem('aqib_google_client_id', result.value.trim());
-                        executeGoogleDriveUpload(result.value.trim());
-                    } else {
-                        exportToCSV();
-                    }
-                });
-                return;
-            }
-
-            executeGoogleDriveUpload(clientId);
-        }
-
-        function executeGoogleDriveUpload(clientId) {
-            if (typeof google === 'undefined' || !google.accounts) {
-                Swal.fire({ icon: 'info', title: 'Google Identity Loading', text: 'Initializing Google OAuth, please try again in a moment.' });
-                return;
-            }
-
-            const tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: clientId,
-                scope: 'https://www.googleapis.com/auth/drive.file',
-                callback: async (response) => {
-                    if (response.error !== undefined) {
-                        console.error("Google Auth Error:", response);
-                        Swal.fire({ 
-                            icon: 'error', 
-                            title: 'Google Auth Error', 
-                            text: 'Invalid Client ID. Downloading CSV backup locally instead.',
-                            showCancelButton: true,
-                            confirmButtonText: 'Reset Client ID',
-                            cancelButtonText: 'OK'
-                        }).then((res) => {
-                            if (res.isConfirmed) {
-                                localStorage.removeItem('aqib_google_client_id');
-                                saveToGoogleDrive();
-                            } else {
-                                exportToCSV();
-                            }
-                        });
-                        return;
-                    }
-                    
-                    const csvData = generateCSVContent();
-                    const metadata = {
-                        name: `Aqib_Arain_Tax_Vault_Backup_${new Date().toISOString().slice(0,10)}.csv`,
-                        mimeType: 'text/csv',
-                    };
-
-                    const file = new Blob([csvData], { type: 'text/csv' });
-                    const form = new FormData();
-                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-                    form.append('file', file);
-
-                    try {
-                        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                            method: 'POST',
-                            headers: new Headers({ 'Authorization': 'Bearer ' + response.access_token }),
-                            body: form
-                        });
-                        const data = await res.json();
-                        if (data.id) {
-                            Swal.fire({ icon: 'success', title: 'Saved to Google Drive!', text: `File "${data.name}" created directly in your Drive!` });
-                        } else {
-                            exportToCSV();
-                        }
-                    } catch(e) {
-                        exportToCSV();
-                    }
-                },
-            });
-
-            tokenClient.requestAccessToken({ prompt: 'consent' });
-        }
-
-        // Initialize App
         loadClientsData();
     </script>
 </body>
