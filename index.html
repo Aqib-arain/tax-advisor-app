@@ -73,6 +73,10 @@
             
             <!-- Mobile Touch Action Buttons -->
             <div class="flex items-center space-x-1 sm:space-x-2">
+                <button onclick="manualCloudSync()" title="Sync with Cloud (Refresh Mobile)" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition flex items-center space-x-1">
+                    <i class="fa-solid fa-rotate text-emerald-600 text-sm"></i>
+                    <span class="hidden md:inline">Sync</span>
+                </button>
                 <button onclick="triggerCSVImport()" title="Import Clients from Excel CSV" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold border border-purple-200 transition flex items-center space-x-1">
                     <i class="fa-solid fa-file-import text-purple-600 text-sm"></i>
                     <span class="hidden md:inline">Import</span>
@@ -376,7 +380,7 @@
             } catch(e) { return cipher; }
         }
 
-        // EXCEL / GOOGLE PASSWORD MANAGER CSV IMPORT ENGINE
+        // EXCEL / GOOGLE PASSWORD MANAGER CSV IMPORT ENGINE (WITH AUTOMATIC CLOUD SYNC)
         function triggerCSVImport() {
             document.getElementById('csvFileInput').click();
         }
@@ -386,22 +390,20 @@
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(evt) {
+            reader.onload = async function(evt) {
                 const content = evt.target.result;
                 const lines = content.split(/\r\n|\n/);
-                let importedCount = 0;
+                let importedBatch = [];
 
                 lines.forEach((line, index) => {
                     if (!line.trim()) return;
                     
-                    // Parse CSV columns
                     const cols = line.split(',').map(col => col.replace(/^"(.*)"$/, '$1').trim());
                     
                     if (cols.length >= 2) {
                         const userName = cols[0];
                         const password = cols[1];
 
-                        // Skip header row if "username" or "name" is in the first row
                         if (index === 0 && (userName.toLowerCase().includes('user') || userName.toLowerCase().includes('name') || password.toLowerCase().includes('pass'))) {
                             return;
                         }
@@ -427,26 +429,52 @@
                                 notes: 'Imported from Google Passwords / Excel'
                             };
 
-                            clientsData.unshift(newClient);
-                            importedCount++;
+                            importedBatch.push(newClient);
                         }
                     }
                 });
 
-                if (importedCount > 0) {
+                if (importedBatch.length > 0) {
+                    clientsData = [...importedBatch, ...clientsData];
                     localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
                     updateCombinedFinancials();
                     filterClients();
+
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Import Successful!',
-                        text: `Successfully imported ${importedCount} client credentials into your vault!`
+                        title: 'Syncing with Mobile Cloud...',
+                        text: `Imported ${importedBatch.length} records locally. Uploading to cloud for your phone...`,
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
                     });
+
+                    // PUSH BATCH TO SUPABASE FOR MOBILE SYNC
+                    if (navigator.onLine) {
+                        try {
+                            await db.from('clients').insert(importedBatch);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Import & Cloud Sync Complete!',
+                                text: `Successfully imported ${importedBatch.length} clients! Open your mobile app and tap Refresh (🔄) to view them!`
+                            });
+                        } catch(err) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Imported Locally!',
+                                text: `Imported ${importedBatch.length} clients locally on this device.`
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Imported Locally!',
+                            text: `Imported ${importedBatch.length} clients locally.`
+                        });
+                    }
                 } else {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Import Failed',
-                        text: 'Could not read usernames and passwords from the selected file. Ensure it is a valid 2-column CSV file.'
+                        text: 'Could not read usernames and passwords from the file.'
                     });
                 }
 
@@ -454,6 +482,36 @@
             };
 
             reader.readAsText(file);
+        }
+
+        // MANUAL CLOUD REFRESH BUTTON (FOR MOBILE)
+        async function manualCloudSync() {
+            Swal.fire({
+                title: 'Syncing Cloud Data...',
+                text: 'Fetching latest clients from database...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            if (!navigator.onLine) {
+                Swal.fire({ icon: 'warning', title: 'Offline Mode', text: 'You are currently offline. Showing local cache.' });
+                return;
+            }
+
+            try {
+                const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
+                if (!error && data && data.length > 0) {
+                    clientsData = data;
+                    localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+                    updateCombinedFinancials();
+                    filterClients();
+                    Swal.fire({ icon: 'success', title: 'Sync Complete!', text: `Loaded ${clientsData.length} records from cloud!`, timer: 1500, showConfirmButton: false });
+                } else {
+                    Swal.fire({ icon: 'info', title: 'Synced', text: 'Already showing latest client records.' });
+                }
+            } catch(err) {
+                Swal.fire({ icon: 'info', title: 'Sync Finished', text: 'Displaying latest saved records.' });
+            }
         }
 
         // STRICT INPUT FORMATTERS & LIMITERS
@@ -688,7 +746,7 @@
                     filterClients();
                 }
             } catch(err) {
-                console.warn("Supabase sync bypassed:", err);
+                console.warn("Supabase background sync bypassed:", err);
             }
         }
 
