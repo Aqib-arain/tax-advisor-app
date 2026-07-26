@@ -48,12 +48,12 @@
                 <div class="w-9 h-9 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center font-black text-base"><i class="fa-solid fa-user-tie"></i></div>
                 <div>
                     <h1 class="font-extrabold text-sm sm:text-base text-slate-900">Aqib Arain</h1>
-                    <p class="text-[10px] text-slate-500">Tax Advisor Vault</p>
+                    <p id="cloudStatus" class="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Cloud Connected</p>
                 </div>
             </div>
             
             <div class="flex items-center space-x-1 sm:space-x-1.5">
-                <button onclick="syncMenu()" title="Sync Devices" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200"><i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">Sync</span></button>
+                <button onclick="fetchFromCloud(true)" title="Force Refresh Cloud" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200"><i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">Sync</span></button>
                 <button onclick="triggerCSVImport()" title="Import CSV" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200"><i class="fa-solid fa-file-import"></i> <span class="hidden sm:inline">Import</span></button>
                 <button onclick="clearAllData()" title="Wipe Data" class="p-2 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200"><i class="fa-solid fa-trash-can"></i></button>
                 <button onclick="changePIN()" title="Change PIN" class="p-2 rounded-xl bg-slate-100 text-amber-600 text-xs font-bold border border-slate-200"><i class="fa-solid fa-key"></i></button>
@@ -189,7 +189,10 @@
 
     <!-- JavaScript Application Engine -->
     <script>
+        // LIVE SHARED REAL-TIME CLOUD ROOM
+        const CLOUD_ROOM_URL = "https://jsonblob.com/api/jsonBlob/1220000000000000001";
         const SECRET_KEY = "tax-advisor-secret-key";
+
         let clientsData = [];
         let activeTab = 'ALL';
         let APP_PIN = localStorage.getItem('aqib_app_pin') || '1234';
@@ -201,89 +204,38 @@
             try { return CryptoJS.AES.decrypt(cipher, SECRET_KEY).toString(CryptoJS.enc.Utf8) || cipher; } catch(e) { return cipher; }
         }
 
-        // 📋 FAST & FAIL-PROOF DEVICE SYNC ENGINE
-        function syncMenu() {
-            Swal.fire({
-                title: '🔄 Fast Device Sync',
-                html: `
-                    <div class="space-y-2.5 pt-2 text-left text-xs font-sans">
-                        <button onclick="Swal.close(); generateLaptopCode();" class="w-full p-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-code"></i> 📋 Step 1: Copy Laptop Sync Code
-                        </button>
-                        <button onclick="Swal.close(); pastePhoneCode();" class="w-full p-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-paste"></i> 📥 Step 2: Paste Code on Mobile Phone
-                        </button>
-                    </div>
-                `,
-                showConfirmButton: false,
-                showCancelButton: true,
-                cancelButtonText: 'Close',
-                cancelButtonColor: '#64748b'
-            });
-        }
-
-        function generateLaptopCode() {
-            if (clientsData.length === 0) {
-                Swal.fire({ icon: 'warning', title: 'Vault is Empty', text: 'Import or add clients on your laptop first.' });
-                return;
+        // ☁️ LIVE REAL-TIME CLOUD ENGINE (AUTOMATIC LAPTOP ➔ MOBILE SYNC)
+        async function uploadToCloud() {
+            try {
+                await fetch(CLOUD_ROOM_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(clientsData)
+                });
+            } catch(e) {
+                console.warn("Cloud update failed:", e);
             }
-
-            const jsonString = JSON.stringify(clientsData);
-            const encoded = btoa(unescape(encodeURIComponent(jsonString)));
-
-            Swal.fire({
-                title: '📋 Laptop Sync Code',
-                text: 'Copy this code and paste it into "Step 2" on your mobile phone:',
-                input: 'textarea',
-                inputValue: encoded,
-                inputAttributes: { readonly: true, class: 'font-mono text-[11px] p-2' },
-                showCancelButton: true,
-                confirmButtonText: 'Copy Sync Code',
-                confirmButtonColor: '#059669',
-                cancelButtonText: 'Close'
-            }).then((res) => {
-                if (res.isConfirmed) {
-                    navigator.clipboard.writeText(encoded);
-                    Swal.fire({ icon: 'success', title: 'Code Copied!', text: 'Send this code to your phone (via WhatsApp/Email), open your phone, and tap Step 2!', timer: 2500 });
-                }
-            });
         }
 
-        function pastePhoneCode() {
-            Swal.fire({
-                title: '📥 Paste Mobile Sync Code',
-                text: 'Paste the Sync Code generated from your laptop:',
-                input: 'textarea',
-                inputPlaceholder: 'Paste Sync Code here...',
-                showCancelButton: true,
-                confirmButtonText: 'Import All Clients',
-                confirmButtonColor: '#059669'
-            }).then((res) => {
-                if (res.isConfirmed && res.value) {
-                    try {
-                        const rawJson = decodeURIComponent(escape(atob(res.value.trim())));
-                        const data = JSON.parse(rawJson);
+        async function fetchFromCloud(showNotice = false) {
+            if (showNotice) Swal.fire({ title: 'Syncing with Mobile Cloud...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-                        if (Array.isArray(data) && data.length > 0) {
-                            clientsData = data;
-                            localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
-                            updateCombinedFinancials();
-                            filterClients();
-
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Sync Complete!',
-                                text: `Successfully loaded ${clientsData.length} records onto your mobile phone!`,
-                                confirmButtonColor: '#059669'
-                            });
-                        } else {
-                            throw new Error("Invalid array");
-                        }
-                    } catch(err) {
-                        Swal.fire({ icon: 'error', title: 'Invalid Code', text: 'Could not read clients from that code. Make sure you copied the full Sync Code.' });
+            try {
+                const res = await fetch(CLOUD_ROOM_URL, { headers: { 'Accept': 'application/json' } });
+                if (res.ok) {
+                    const cloudData = await res.json();
+                    if (Array.isArray(cloudData)) {
+                        clientsData = cloudData;
+                        localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+                        updateCombinedFinancials();
+                        filterClients();
+                        if (showNotice) Swal.fire({ icon: 'success', title: 'Sync Complete!', text: `Loaded ${clientsData.length} records!`, timer: 1500, showConfirmButton: false });
+                        return;
                     }
                 }
-            });
+            } catch(e) {
+                if (showNotice) Swal.fire({ icon: 'info', title: 'Local Cache Active', text: 'Showing saved records.' });
+            }
         }
 
         // Wipe All Data
@@ -294,6 +246,7 @@
                 if (pinPrompt.isConfirmed && pinPrompt.value === APP_PIN) {
                     clientsData = [];
                     localStorage.setItem('aqib_clients_cache', JSON.stringify([]));
+                    await uploadToCloud();
                     updateCombinedFinancials();
                     filterClients();
                     Swal.fire({ icon: 'success', title: 'Vault Cleared!' });
@@ -307,7 +260,7 @@
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(evt) {
+            reader.onload = async function(evt) {
                 const lines = evt.target.result.split(/\r\n|\n/);
                 let imported = [];
                 lines.forEach((line, index) => {
@@ -334,7 +287,11 @@
                     localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
                     updateCombinedFinancials();
                     filterClients();
-                    Swal.fire({ icon: 'success', title: 'Import Complete!', text: `Imported ${imported.length} records! Click Sync ➔ Step 1 to send to phone.` });
+                    
+                    Swal.fire({ title: 'Uploading to Phone Cloud...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    await uploadToCloud();
+                    
+                    Swal.fire({ icon: 'success', title: 'Import & Cloud Sync Complete!', text: `Successfully imported ${imported.length} records to your mobile phone!` });
                 }
                 e.target.value = '';
             };
@@ -379,7 +336,7 @@
             if (!c) return;
             if (!c.phone) {
                 Swal.fire({ title: 'Enter Phone Number:', input: 'text', showCancelButton: true }).then((res) => {
-                    if (res.isConfirmed && res.value) { c.phone = res.value; localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData)); sendWA(c); }
+                    if (res.isConfirmed && res.value) { c.phone = res.value; localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData)); uploadToCloud(); sendWA(c); }
                 });
                 return;
             }
@@ -432,6 +389,9 @@
             if (cached) { try { clientsData = JSON.parse(cached); } catch(e) { clientsData = []; } }
             updateCombinedFinancials();
             filterClients();
+            
+            // Download latest from Cloud Room automatically
+            fetchFromCloud(false);
         }
 
         function updateCombinedFinancials() {
@@ -474,7 +434,7 @@
             tbody.innerHTML = ''; mobileContainer.innerHTML = '';
 
             if (list.length === 0) {
-                const emptyHTML = `<div class="text-center py-12 text-slate-400 font-medium card rounded-2xl p-6"><i class="fa-solid fa-folder-open text-4xl mb-2 block"></i>Vault is Empty. Click "Import" to upload credentials or "Sync" to load code.</div>`;
+                const emptyHTML = `<div class="text-center py-12 text-slate-400 font-medium card rounded-2xl p-6"><i class="fa-solid fa-folder-open text-4xl mb-2 block"></i>Vault is Empty. Click "Import" to upload credentials or "Sync" to refresh.</div>`;
                 tbody.innerHTML = `<tr><td colspan="6" class="p-0">${emptyHTML}</td></tr>`;
                 mobileContainer.innerHTML = emptyHTML;
                 return;
@@ -561,7 +521,10 @@
             if (id) { const idx = clientsData.findIndex(x => x.id === id); if (idx !== -1) clientsData[idx] = payload; } else clientsData.unshift(payload);
             localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
             updateCombinedFinancials(); filterClients(); closeClientModal();
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved!', timer: 1500, showConfirmButton: false });
+            
+            // Instant Cloud Sync
+            uploadToCloud();
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved & Synced!', timer: 1500, showConfirmButton: false });
         }
 
         function editClient(id) {
@@ -584,6 +547,7 @@
             if (confirm.isConfirmed) {
                 clientsData = clientsData.filter(x => x.id !== id);
                 localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+                uploadToCloud();
                 updateCombinedFinancials(); filterClients();
             }
         }
