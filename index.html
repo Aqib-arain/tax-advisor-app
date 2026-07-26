@@ -71,7 +71,7 @@
             
             <!-- Mobile Touch Action Buttons -->
             <div class="flex items-center space-x-1 sm:space-x-2">
-                <button onclick="cloudSyncMenu()" title="Live Cross-Device Cloud Sync" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition flex items-center space-x-1">
+                <button onclick="cloudSyncMenu()" title="Live Cross-Device Sync" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition flex items-center space-x-1">
                     <i class="fa-solid fa-rotate text-emerald-600 text-sm"></i>
                     <span class="hidden md:inline">Sync</span>
                 </button>
@@ -325,7 +325,7 @@
                             <select id="paymentStatus" class="w-full p-2 rounded-xl executive-input bg-white">
                                 <option value="Unpaid">Unpaid</option>
                                 <option value="Partial">Partial Pay</option>
-                                option value="Paid">Paid</option>
+                                <option value="Paid">Paid</option>
                             </select>
                         </div>
                         <div>
@@ -359,7 +359,7 @@
 
     <!-- JavaScript Engine -->
     <script>
-        const CLOUD_SYNC_ENDPOINT = "https://kvdb.io/A849XpL2k9S0/aqib_arain_tax_vault_v1";
+        const CLOUD_BLOB_URL = "https://jsonblob.com/api/jsonBlob/1220000000000000000";
         const SECRET_KEY = "tax-advisor-secret-key";
 
         let clientsData = [];
@@ -379,41 +379,46 @@
             } catch(e) { return cipher; }
         }
 
-        // 🌐 LIVE CROSS-DEVICE CLOUD SYNC MENU
+        // 🌐 DUAL CROSS-DEVICE CLOUD SYNC MENU
         function cloudSyncMenu() {
             Swal.fire({
-                title: '🌐 Cross-Device Sync',
-                text: 'Transfer your data between Laptop & Mobile Phone:',
-                icon: 'question',
+                title: '🌐 Cross-Device Sync Options',
+                html: `
+                    <div class="space-y-2 pt-2 text-left text-xs font-sans">
+                        <button onclick="Swal.close(); pushToCloud();" class="w-full p-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> 📤 Upload Laptop Data to Cloud
+                        </button>
+                        <button onclick="Swal.close(); pullFromCloud();" class="w-full p-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> 📥 Download Cloud Data to Phone
+                        </button>
+                        <div class="border-t border-slate-200 my-2 pt-2 text-center text-slate-400 font-semibold text-[11px]">OR USE DIRECT SYNC CODE</div>
+                        <button onclick="Swal.close(); showSyncCodeModal();" class="w-full p-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl flex items-center justify-center gap-2 border border-slate-300">
+                            <i class="fa-solid fa-code"></i> 📋 Generate Laptop Sync Code
+                        </button>
+                        <button onclick="Swal.close(); importSyncCode();" class="w-full p-3 bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold rounded-xl flex items-center justify-center gap-2 border border-purple-200">
+                            <i class="fa-solid fa-paste"></i> 📥 Paste Sync Code on Phone
+                        </button>
+                    </div>
+                `,
+                showConfirmButton: false,
                 showCancelButton: true,
-                showDenyButton: true,
-                confirmButtonText: '📤 Upload to Cloud (From Laptop)',
-                denyButtonText: '📥 Download to Phone (To Mobile)',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#059669',
-                denyButtonColor: '#4f46e5',
+                cancelButtonText: 'Close',
                 cancelButtonColor: '#64748b'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    pushToCloud();
-                } else if (result.isDenied) {
-                    pullFromCloud();
-                }
             });
         }
 
         async function pushToCloud() {
             Swal.fire({
                 title: 'Uploading to Cloud...',
-                text: `Syncing ${clientsData.length} client records to live cloud relay...`,
+                text: `Uploading ${clientsData.length} records to cloud relay...`,
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
 
             try {
-                const res = await fetch(CLOUD_SYNC_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                const res = await fetch(CLOUD_BLOB_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify(clientsData)
                 });
 
@@ -421,30 +426,31 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Cloud Upload Complete!',
-                        text: `Uploaded ${clientsData.length} records! Now open your mobile phone and click Sync ➔ Download to Phone.`,
+                        text: `Successfully uploaded ${clientsData.length} client records! Open your phone and tap Sync ➔ Download to Phone.`,
                         confirmButtonColor: '#059669'
                     });
                 } else {
-                    throw new Error("Cloud upload failed");
+                    throw new Error("Upload Failed");
                 }
             } catch(e) {
-                Swal.fire({ icon: 'error', title: 'Upload Failed', text: 'Please check your internet connection and try again.' });
+                // If network/adblocker blocks cloud upload, auto popup the Sync Code!
+                showSyncCodeModal();
             }
         }
 
         async function pullFromCloud() {
             Swal.fire({
                 title: 'Downloading from Cloud...',
-                text: 'Fetching latest records from laptop upload...',
+                text: 'Fetching latest client records...',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
 
             try {
-                const res = await fetch(CLOUD_SYNC_ENDPOINT);
+                const res = await fetch(CLOUD_BLOB_URL, { headers: { 'Accept': 'application/json' } });
                 if (res.ok) {
                     const cloudData = await res.json();
-                    if (Array.isArray(cloudData)) {
+                    if (Array.isArray(cloudData) && cloudData.length > 0) {
                         clientsData = cloudData;
                         localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
                         localStorage.removeItem('aqib_vault_wiped');
@@ -454,16 +460,74 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Sync Complete!',
-                            text: `Successfully downloaded ${clientsData.length} records onto your device!`,
+                            text: `Successfully downloaded ${clientsData.length} records onto your mobile device!`,
                             confirmButtonColor: '#059669'
                         });
+                        return;
                     }
-                } else {
-                    throw new Error("No cloud record found");
                 }
+                throw new Error("Cloud empty");
             } catch(e) {
-                Swal.fire({ icon: 'warning', title: 'No Cloud Data Found', text: 'Please click "Upload to Cloud" on your laptop first!' });
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Use Direct Sync Code',
+                    text: 'Cloud connection was blocked or empty. Click "Paste Sync Code" to transfer directly from laptop!',
+                    confirmButtonText: 'Paste Sync Code',
+                    confirmButtonColor: '#4f46e5'
+                }).then((r) => {
+                    if (r.isConfirmed) importSyncCode();
+                });
             }
+        }
+
+        // DIRECT CODE SYNC (100% ADBLOCKER-PROOF & OFFLINE)
+        function showSyncCodeModal() {
+            const compressedData = btoa(unescape(encodeURIComponent(JSON.stringify(clientsData))));
+            
+            Swal.fire({
+                title: '📋 Laptop Sync Code',
+                text: 'Copy this code and paste it on your phone:',
+                input: 'textarea',
+                inputValue: compressedData,
+                inputAttributes: { readonly: true, class: 'font-mono text-xs' },
+                showCancelButton: true,
+                confirmButtonText: 'Copy Sync Code',
+                cancelButtonText: 'Close',
+                confirmButtonColor: '#059669'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigator.clipboard.writeText(compressedData);
+                    Swal.fire({ icon: 'success', title: 'Code Copied!', text: 'Now open your phone, click Sync ➔ Paste Sync Code!', timer: 2000 });
+                }
+            });
+        }
+
+        function importSyncCode() {
+            Swal.fire({
+                title: '📥 Paste Sync Code',
+                text: 'Paste the Sync Code generated from your laptop:',
+                input: 'textarea',
+                inputPlaceholder: 'Paste code here...',
+                showCancelButton: true,
+                confirmButtonText: 'Import All Clients',
+                confirmButtonColor: '#059669'
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    try {
+                        const decompressed = JSON.parse(decodeURIComponent(escape(atob(result.value.trim()))));
+                        if (Array.isArray(decompressed)) {
+                            clientsData = decompressed;
+                            localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+                            localStorage.removeItem('aqib_vault_wiped');
+                            updateCombinedFinancials();
+                            filterClients();
+                            Swal.fire({ icon: 'success', title: 'Sync Complete!', text: `Successfully loaded ${clientsData.length} clients on your phone!` });
+                        }
+                    } catch(err) {
+                        Swal.fire({ icon: 'error', title: 'Invalid Code', text: 'Please make sure you copied the full Sync Code from your laptop.' });
+                    }
+                }
+            });
         }
 
         // 🗑️ CLEAR ALL DATA FUNCTION
@@ -495,14 +559,6 @@
                     clientsData = [];
                     localStorage.setItem('aqib_clients_cache', JSON.stringify([]));
                     localStorage.setItem('aqib_vault_wiped', 'true');
-                    
-                    try {
-                        await fetch(CLOUD_SYNC_ENDPOINT, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify([])
-                        });
-                    } catch(e) {}
 
                     updateCombinedFinancials();
                     filterClients();
@@ -609,7 +665,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Import Successful!',
-                        text: `Successfully imported ${importedBatch.length} credentials! Now click Sync ➔ Upload to Cloud to send them to your phone!`,
+                        text: `Successfully imported ${importedBatch.length} credentials! Click Sync ➔ Upload to Cloud to send them to your phone!`,
                         confirmButtonColor: '#059669'
                     });
                 } else {
