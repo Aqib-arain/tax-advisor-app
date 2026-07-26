@@ -8,8 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- CryptoJS (AES-256) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <!-- SweetAlert2 -->
@@ -73,7 +71,7 @@
             
             <!-- Mobile Touch Action Buttons -->
             <div class="flex items-center space-x-1 sm:space-x-2">
-                <button onclick="syncWithSupabase(true)" title="Cloud Refresh / Sync Mobile" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition flex items-center space-x-1">
+                <button onclick="cloudSyncMenu()" title="Live Cross-Device Cloud Sync" class="p-2 sm:px-3 sm:py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold border border-emerald-200 transition flex items-center space-x-1">
                     <i class="fa-solid fa-rotate text-emerald-600 text-sm"></i>
                     <span class="hidden md:inline">Sync</span>
                 </button>
@@ -327,7 +325,7 @@
                             <select id="paymentStatus" class="w-full p-2 rounded-xl executive-input bg-white">
                                 <option value="Unpaid">Unpaid</option>
                                 <option value="Partial">Partial Pay</option>
-                                <option value="Paid">Paid</option>
+                                option value="Paid">Paid</option>
                             </select>
                         </div>
                         <div>
@@ -361,11 +359,9 @@
 
     <!-- JavaScript Engine -->
     <script>
-        const SUPABASE_URL = "https://xmrprtdsucbqkyflbgfj.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_MfURv5DghN1mAHOHhgpYhA_TtiuEdtT"; 
+        const CLOUD_SYNC_ENDPOINT = "https://kvdb.io/A849XpL2k9S0/aqib_arain_tax_vault_v1";
         const SECRET_KEY = "tax-advisor-secret-key";
 
-        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let clientsData = [];
         let activeTab = 'ALL';
         let APP_PIN = localStorage.getItem('aqib_app_pin') || '1234';
@@ -383,41 +379,94 @@
             } catch(e) { return cipher; }
         }
 
-        // 🔄 CLOUD REFRESH ENGINE
-        async function syncWithSupabase(showModal = false) {
-            if (showModal) {
-                Swal.fire({
-                    title: 'Syncing Devices...',
-                    text: 'Checking cloud database for new records...',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-            }
+        // 🌐 LIVE CROSS-DEVICE CLOUD SYNC MENU
+        function cloudSyncMenu() {
+            Swal.fire({
+                title: '🌐 Cross-Device Sync',
+                text: 'Transfer your data between Laptop & Mobile Phone:',
+                icon: 'question',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: '📤 Upload to Cloud (From Laptop)',
+                denyButtonText: '📥 Download to Phone (To Mobile)',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#059669',
+                denyButtonColor: '#4f46e5',
+                cancelButtonColor: '#64748b'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    pushToCloud();
+                } else if (result.isDenied) {
+                    pullFromCloud();
+                }
+            });
+        }
 
-            if (!navigator.onLine) {
-                if (showModal) Swal.fire({ icon: 'warning', title: 'Offline Mode', text: 'Please connect to internet to sync.' });
-                return;
-            }
+        async function pushToCloud() {
+            Swal.fire({
+                title: 'Uploading to Cloud...',
+                text: `Syncing ${clientsData.length} client records to live cloud relay...`,
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
 
             try {
-                const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
-                if (!error && data) {
-                    clientsData = data;
-                    localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
-                    updateCombinedFinancials();
-                    filterClients();
-                    if (showModal) {
-                        Swal.fire({ icon: 'success', title: 'Sync Complete!', text: `Loaded ${data.length} records!`, timer: 1500, showConfirmButton: false });
-                    }
-                } else if (showModal) {
-                    Swal.fire({ icon: 'info', title: 'Synced', text: 'Displaying latest saved records.' });
+                const res = await fetch(CLOUD_SYNC_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(clientsData)
+                });
+
+                if (res.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cloud Upload Complete!',
+                        text: `Uploaded ${clientsData.length} records! Now open your mobile phone and click Sync ➔ Download to Phone.`,
+                        confirmButtonColor: '#059669'
+                    });
+                } else {
+                    throw new Error("Cloud upload failed");
                 }
             } catch(e) {
-                if (showModal) Swal.fire({ icon: 'info', title: 'Sync Active', text: 'Showing latest saved local records.' });
+                Swal.fire({ icon: 'error', title: 'Upload Failed', text: 'Please check your internet connection and try again.' });
             }
         }
 
-        // 🗑️ CLEAR ALL DATA FUNCTION (STAYS EMPTY - NO SAMPLE CLIENT RE-CREATION)
+        async function pullFromCloud() {
+            Swal.fire({
+                title: 'Downloading from Cloud...',
+                text: 'Fetching latest records from laptop upload...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
+                const res = await fetch(CLOUD_SYNC_ENDPOINT);
+                if (res.ok) {
+                    const cloudData = await res.json();
+                    if (Array.isArray(cloudData)) {
+                        clientsData = cloudData;
+                        localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+                        localStorage.removeItem('aqib_vault_wiped');
+                        updateCombinedFinancials();
+                        filterClients();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sync Complete!',
+                            text: `Successfully downloaded ${clientsData.length} records onto your device!`,
+                            confirmButtonColor: '#059669'
+                        });
+                    }
+                } else {
+                    throw new Error("No cloud record found");
+                }
+            } catch(e) {
+                Swal.fire({ icon: 'warning', title: 'No Cloud Data Found', text: 'Please click "Upload to Cloud" on your laptop first!' });
+            }
+        }
+
+        // 🗑️ CLEAR ALL DATA FUNCTION
         async function clearAllClientsData() {
             const confirm1 = await Swal.fire({
                 title: '🗑️ Wipe Entire Vault?',
@@ -447,9 +496,13 @@
                     localStorage.setItem('aqib_clients_cache', JSON.stringify([]));
                     localStorage.setItem('aqib_vault_wiped', 'true');
                     
-                    if (navigator.onLine) {
-                        try { await db.from('clients').delete().neq('id', '0'); } catch(e) {}
-                    }
+                    try {
+                        await fetch(CLOUD_SYNC_ENDPOINT, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify([])
+                        });
+                    } catch(e) {}
 
                     updateCombinedFinancials();
                     filterClients();
@@ -556,7 +609,8 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Import Successful!',
-                        text: `Successfully imported ${importedBatch.length} credentials into your vault!`
+                        text: `Successfully imported ${importedBatch.length} credentials! Now click Sync ➔ Upload to Cloud to send them to your phone!`,
+                        confirmButtonColor: '#059669'
                     });
                 } else {
                     Swal.fire({
@@ -774,7 +828,7 @@
             else statusSelect.value = 'Partial';
         }
 
-        // LOAD CLIENTS FROM LOCAL STORAGE (HONORS WIPED VAULT)
+        // LOAD CLIENTS FROM LOCAL STORAGE
         function loadClientsData() {
             const cached = localStorage.getItem('aqib_clients_cache');
             const isWiped = localStorage.getItem('aqib_vault_wiped');
@@ -786,7 +840,6 @@
                     clientsData = [];
                 }
             } else if (!isWiped) {
-                // Initial sample client ONLY on brand new app install
                 clientsData = [
                     {
                         id: generateUUID(),
@@ -814,9 +867,6 @@
 
             updateCombinedFinancials();
             filterClients();
-            
-            // Auto Sync background check
-            syncWithSupabase();
         }
 
         function updateCombinedFinancials() {
@@ -1113,13 +1163,6 @@
             closeClientModal();
 
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Saved Successfully!', showConfirmButton: false, timer: 1500 });
-
-            if (navigator.onLine) {
-                try {
-                    if (id) await db.from('clients').update(payload).eq('id', id);
-                    else await db.from('clients').insert([payload]);
-                } catch(e) {}
-            }
         }
 
         function editClient(id) {
@@ -1163,10 +1206,6 @@
                 localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
                 updateCombinedFinancials();
                 filterClients();
-
-                if (navigator.onLine) {
-                    try { await db.from('clients').delete().eq('id', id); } catch(e) {}
-                }
             }
         }
 
