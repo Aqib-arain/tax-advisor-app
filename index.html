@@ -401,7 +401,7 @@
 
             try {
                 const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
-                if (!error && data && data.length > 0) {
+                if (!error && data) {
                     clientsData = data;
                     localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
                     updateCombinedFinancials();
@@ -417,7 +417,7 @@
             }
         }
 
-        // 🗑️ CLEAR ALL DATA FUNCTION
+        // 🗑️ CLEAR ALL DATA FUNCTION (STAYS EMPTY - NO SAMPLE CLIENT RE-CREATION)
         async function clearAllClientsData() {
             const confirm1 = await Swal.fire({
                 title: '🗑️ Wipe Entire Vault?',
@@ -444,7 +444,8 @@
 
                 if (pinPrompt.isConfirmed && pinPrompt.value === APP_PIN) {
                     clientsData = [];
-                    localStorage.removeItem('aqib_clients_cache');
+                    localStorage.setItem('aqib_clients_cache', JSON.stringify([]));
+                    localStorage.setItem('aqib_vault_wiped', 'true');
                     
                     if (navigator.onLine) {
                         try { await db.from('clients').delete().neq('id', '0'); } catch(e) {}
@@ -456,7 +457,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Vault Cleared!',
-                        text: 'All old records removed. Click "Import" to upload your Google Password CSV file!',
+                        text: 'All data permanently removed. Click "Import" to upload your Google Password CSV file!',
                         confirmButtonColor: '#059669'
                     });
                 } else if (pinPrompt.isConfirmed) {
@@ -548,6 +549,7 @@
                 if (importedBatch.length > 0) {
                     clientsData = [...importedBatch, ...clientsData];
                     localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+                    localStorage.removeItem('aqib_vault_wiped');
                     updateCombinedFinancials();
                     filterClients();
 
@@ -772,16 +774,42 @@
             else statusSelect.value = 'Partial';
         }
 
-        // LOAD CLIENTS FROM LOCAL STORAGE FIRST
+        // LOAD CLIENTS FROM LOCAL STORAGE (HONORS WIPED VAULT)
         function loadClientsData() {
             const cached = localStorage.getItem('aqib_clients_cache');
-            
+            const isWiped = localStorage.getItem('aqib_vault_wiped');
+
             if (cached) {
                 try {
                     clientsData = JSON.parse(cached);
                 } catch(e) {
                     clientsData = [];
                 }
+            } else if (!isWiped) {
+                // Initial sample client ONLY on brand new app install
+                clientsData = [
+                    {
+                        id: generateUUID(),
+                        portal_type: 'FBR',
+                        tax_year: '2026',
+                        atl_status: 'Active',
+                        full_name: 'Muhammad Ali (Sample Client)',
+                        phone: '03001234567',
+                        email: 'ali@example.com',
+                        cnic: '35201-1234567-1',
+                        ntn: '7654321',
+                        referred_by: 'Self',
+                        fee_agreed: 5000,
+                        fee_received: 3000,
+                        tax_portal_password_encrypted: encryptText('Pass1234'),
+                        payment_status: 'Partial',
+                        contact_status: 'Contacted',
+                        notes: 'This is a sample record. You can edit or delete it.'
+                    }
+                ];
+                localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+            } else {
+                clientsData = [];
             }
 
             updateCombinedFinancials();
@@ -880,7 +908,7 @@
 
             list.forEach(c => {
                 const cid = c.id || generateUUID();
-                c.id = cid; // Ensure ID exists
+                c.id = cid;
                 const decPass = decryptText(c.tax_portal_password_encrypted);
                 const displayName = c.full_name || 'Unnamed Client';
                 const portal = c.portal_type || 'FBR';
@@ -953,7 +981,7 @@
                 `;
                 tbody.appendChild(tr);
 
-                // 2. MOBILE TOUCH CARD (100% QUOTE-PROOF)
+                // 2. MOBILE TOUCH CARD
                 const mCard = document.createElement('div');
                 mCard.className = "executive-card p-4 rounded-2xl space-y-3 relative";
                 mCard.innerHTML = `
@@ -1079,6 +1107,7 @@
                 clientsData.unshift(payload);
             }
             localStorage.setItem('aqib_clients_cache', JSON.stringify(clientsData));
+            localStorage.removeItem('aqib_vault_wiped');
             updateCombinedFinancials();
             filterClients();
             closeClientModal();
